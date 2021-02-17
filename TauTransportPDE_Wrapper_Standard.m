@@ -3,7 +3,7 @@
 
 % 1. Define directories for saving outputs
 curpath = cd;
-savepath = cd;
+savepath = '/Users/justintorok/Documents/MATLAB/TAUPDE/SimResults/';
 simstr = 'constant_n0_L1000_ant_test'; % for saving the outputs
 
 % 2a. Define actively tuned parameters 
@@ -25,7 +25,7 @@ T = 5e7; % default = 5e7
 tsteps = 250; % default = 250
 
 % 2c. Define ICs
-n0 = 20*ones(1,L_int); % default = 0.2*ones(1,L_int);
+n0 = [zeros(1,L_ais), 20*ones(1,(L_int-L_ais-L_syn)), zeros(1,L_syn)]; % default = [zeros(1,L_ais), 20*ones(1,(L_int-L_ais-L_syn)), zeros(1,L_syn)]
 m0 = zeros(1,L_int); % default = zeros(1,L_int)
 N1_0 = 0; % default = 0
 N2_0 = 0; % default = 0
