@@ -3,7 +3,7 @@
 
 % 1. Define directories for saving outputs
 curpath = cd;
-simpath = '/Users/justintorok/Documents/MATLAB/TAUPDE/SimResults/';
+simpath = '/Users/justintorok/Documents/MATLAB/Tau_Transport/SimResults/';
 simstr = 'heatmap_plot_default'; % for saving the outputs
 
 % 2a. Define actively tuned parameters 

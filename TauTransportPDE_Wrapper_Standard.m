@@ -3,7 +3,7 @@
 
 % 1. Define directories for saving outputs
 curpath = cd;
-savepath = '/Users/justintorok/Documents/MATLAB/TAUPDE/SimResults/';
+savepath = '/Users/justintorok/Documents/MATLAB/Tau_Transport/SimResults/';
 simstr = 'constant_n0_L1000_ant_test'; % for saving the outputs
 
 % 2a. Define actively tuned parameters 
