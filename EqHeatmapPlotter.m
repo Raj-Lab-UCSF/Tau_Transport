@@ -7,7 +7,7 @@ if nargin < 3
     end
 end
 
-fpath = [basepath filesep 'SampleResults'];
+fpath = [basepath filesep 'SampleFiles'];
 outpath = [basepath filesep 'OutputFigures'];
 
 switch paramname

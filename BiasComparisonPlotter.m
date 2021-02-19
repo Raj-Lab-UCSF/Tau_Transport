@@ -7,9 +7,9 @@ if nargin < 2
     end
 end
 
-fpath = [basepath filesep 'SampleResults'];
+fpath = [basepath filesep 'SampleFiles'];
 outpath = [basepath filesep 'OutputFigures'];
-load([basepath filesep 'Svals_From_DirNTResults.mat'],'svals_adl','tpts_adl',...
+load([fpath filesep 'Svals_From_DirNTResults.mat'],'svals_adl','tpts_adl',...
                 'adl_names','svals_nadl','tpts_nadl','nadl_names');
 figure('Units', 'inch', 'Position', [0 0 30 10]);
 % sgtitle('Bias Comparisons','FontSize',32,'FontWeight','bold');
@@ -120,6 +120,7 @@ for i = 1:length(svals_nadl_vec)
     svals_nadl_bias(i) = bias(ind);
     tpts_nadl_bias(i) = trange(ind);
 end
+
 gof_nadl = corr(svals_nadl_bias.',svals_nadl_vec.');
 
 subplot(1,2,2);

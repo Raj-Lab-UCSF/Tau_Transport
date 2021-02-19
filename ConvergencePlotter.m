@@ -9,7 +9,7 @@ if nargin < 2
     end
 end
 
-fpath = [basepath filesep 'SampleResults'];
+fpath = [basepath filesep 'SampleFiles'];
 outpath = [basepath filesep 'OutputFigures'];
 
 simstr = 'random_init';

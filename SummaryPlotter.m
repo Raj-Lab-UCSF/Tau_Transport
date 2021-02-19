@@ -7,7 +7,7 @@ if nargin < 2
     end
 end
 
-fpath = [basepath filesep 'SampleResults'];
+fpath = [basepath filesep 'SampleFiles'];
 outpath = [basepath filesep 'OutputFigures'];
 
 filestr = 'constant_n0_L1000_coarse_'; % coarse xmesh gives smoother bias manifolds at early t

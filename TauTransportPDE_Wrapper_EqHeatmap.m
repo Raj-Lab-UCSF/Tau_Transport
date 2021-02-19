@@ -3,7 +3,7 @@
 
 % 1. Define directories for saving outputs
 curpath = cd;
-simpath = [curpath filesep 'SampleResults'];
+simpath = [curpath filesep 'SampleFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end

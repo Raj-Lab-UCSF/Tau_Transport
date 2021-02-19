@@ -11,7 +11,7 @@ if nargin < 4
     end
 end
 
-fpath = [basepath filesep 'SampleResults'];
+fpath = [basepath filesep 'SampleFiles'];
 outpath = [basepath filesep 'OutputFigures'];
 load([fpath filesep matstr '.mat']);
 

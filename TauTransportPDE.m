@@ -23,9 +23,9 @@ function [n, m, xmesh, trange, jn, jm] = TauTransportPDE(varargin)
 % alpha: generative (linear) term of phosphorylated monomers (uM/s)
 % beta: fragmentation rate of aggregates to form mobile 'monomers' (1/s)
 % gamma: aggregation rate (1/(uM*s)), ~ 2 (Northup 1992)
-% delta (contained in v): rate of antero transport enhancement by monomers
+% delta (contained in v): rate of anterograde transport enhancement by monomers
 % (1/uM)
-% epsilon (contained in v): rate of antero transport inhibition by aggs
+% epsilon (contained in v): rate of anterograde transport inhibition by aggs
 % (1/uM)
 % lambda: scaling constant of the rate of diffusion across GM-WM boundaries
 %
@@ -56,15 +56,6 @@ function [n, m, xmesh, trange, jn, jm] = TauTransportPDE(varargin)
 % v_a: Basal rate of anterograde tau transport
 % v_r: Basal rate of retrograde tau transport
 % frac: Net fraction of tau undergoing diffusion (i.e. unbound tau)
-% 
-% Note that this model reduces back to a "spatial diffusion" analog of the
-% Network Diffusion Model (NDM) under the following conditions:
-% alpha = beta = gamma = delta = epsilon = 0
-% frac = 1
-% M1 = M2 = 0; m0 = zeros(1, length(L_init/xsteps))
-%
-% It further reduces down to the "ODE" solution if L_int is set to 0,
-% forcing the spatial mask to be continuous.
 %
 % This function relies upon the MATLAB builtin pdepe, which solves
 % elliptical and parabolic partial differential equations, and inputParser,

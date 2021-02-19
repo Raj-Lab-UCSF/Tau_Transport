@@ -1,0 +1,32 @@
+This is TeX, Version 3.14159265 (TeX Live 2018) (preloaded format=tex 2018.4.16)  19 FEB 2021 14:47
+**README.md
+(./README.md
+! You can't use `macro parameter character #' in vertical mode.
+l.1 #
+      Tau_Transport
+? 
+! Missing $ inserted.
+<inserted text> 
+                $
+<to be read again> 
+                   _
+l.1 # Tau_
+          Transport
+? 
+)
+*
+! Missing $ inserted.
+<inserted text> 
+                $
+<to be read again> 
+                   \par 
+<*> 
+    
+? :q
+Type <return> to proceed, S to scroll future error messages,
+R to run without stopping, Q to run quietly,
+I to insert something, 
+1 or ... or 9 to ignore the next 1 to 9 tokens of input,
+H for help, X to quit.
+? x
+No pages of output.
