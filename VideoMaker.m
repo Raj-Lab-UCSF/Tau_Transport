@@ -1,12 +1,12 @@
-function VideoMaker(matstr,fpath,outpath)
+function VideoMaker(matstr,basepath)
 
-if nargin < 3
-    outpath = 
-    if nargin < 2
-        fpath = '/Users/justintorok/Documents/MATLAB/Tau_Transport/SampleResults';
-    end
+if nargin < 2
+    basepath = cd;
 end
-load([fpath filesep matstr '.mat'])
+
+fpath = [basepath filesep 'SampleResults'];
+outpath = [basepath filesep 'OutputFigures'];
+load([fpath filesep matstr '.mat']);
 
 Lt = L1+L2+L_int;
 trange = trange/86400;
@@ -65,10 +65,10 @@ for i = 1:length(trange)
     jn_neg(jn_ < 0) = jn_(jn_ < 0);
     ratiomax = max([jn_pos, abs(jn_neg)])/(thresh);
     plotinds = 1:120:Lt;
-    q1 = quiver(40*plotinds/mean(plotinds),ones(1,length(plotinds)),jn_pos(plotinds),zeros(1,length(plotinds)),'Color',[0 0 0],'LineWidth',1.5);
+    q1 = quiver(40*plotinds/mean(plotinds),ones(1,length(plotinds)),jn_pos(plotinds),zeros(1,length(plotinds)),'Color',[1 0 0],'LineWidth',1.5);
     set(q1,'AutoScale','on', 'AutoScaleFactor',0.2*ratiomax)
     hold on;
-    q2 = quiver(40*plotinds/mean(plotinds),ones(1,length(plotinds)),jn_neg(plotinds),zeros(1,length(plotinds)),'Color',[0 0 0],'LineWidth',1.5);
+    q2 = quiver(40*plotinds/mean(plotinds),ones(1,length(plotinds)),jn_neg(plotinds),zeros(1,length(plotinds)),'Color',[1 0 0],'LineWidth',1.5);
     set(q2,'AutoScale','on', 'AutoScaleFactor',0.2*ratiomax)
     yticks([]); xticks([]);
     set(gca,'TickLength',[0 0]);
