@@ -42,7 +42,7 @@ nonnorm_total = trapz(n_init0) + trapz(m_init0);
 rescale_factor = total_mass/nonnorm_total; 
 
 % 2d. Define xmesh resolution
-resmesh = 'fine'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
+resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 
 % 3. Run TauTransportPDE
 [n, m, xmesh, trange, jn, jm] = TauTransportPDE('alpha', alpha,...
@@ -91,7 +91,5 @@ for i = 1:tsteps
 end        
 
 % 5. Save output file
-cd(savepath)
-save([simstr '.mat']) % saves all outputs, including parameters
-cd(curpath);
+save([simpath filesep simstr '.mat']) % saves all outputs, including parameters
 clear

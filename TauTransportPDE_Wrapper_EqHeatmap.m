@@ -110,7 +110,5 @@ for i = 1:length(deltalist)
 end
 
 % 4. Save output file
-cd(simpath)
-save([simstr '.mat'])
-cd(curpath)
+save([simpath filesep simstr '.mat']) % saves all outputs, including parameters
 clear

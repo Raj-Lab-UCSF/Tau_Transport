@@ -107,7 +107,5 @@ for i = 1:numiters
 end
 
 % 4. Save output file
-cd(savepath)
-save([simstr '.mat']) % saves all outputs, including parameters
-cd(curpath);
+save([simpath filesep simstr '.mat']) % saves all outputs, including parameters
 clear
