@@ -20,6 +20,9 @@ thresh = 3*median(abs(jn(:)));
 jn(jn < -thresh) = -thresh;
 jn(jn > thresh) = thresh;
 
+if ~isfolder(outpath)
+    mkdir(outpath)
+end
 v = VideoWriter([outpath filesep matstr '.avi']);
 open(v);
 figure('Units', 'inch', 'Position', [0 0 18 15]);
@@ -128,5 +131,6 @@ for i = 1:length(trange)
     writeVideo(v,frame);
 end
 close(v)
+close
 
 end
