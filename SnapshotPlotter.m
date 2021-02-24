@@ -1,8 +1,8 @@
 function SnapshotPlotter(matstr,customt,savenclose,basepath)
 
 % customt = [1,100,145,188,250]; retrograde default
-% customt = [1,100,146,191,234]; mixed default
-% customt = [1,100,146,179,234]; anterograde default
+% customt = [1,100,146,191,250]; mixed default
+% customt = [1,100,146,179,250]; anterograde default
 
 if nargin < 4
     basepath = cd;
