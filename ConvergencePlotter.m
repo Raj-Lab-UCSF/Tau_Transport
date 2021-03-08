@@ -51,7 +51,7 @@ for k = 1:length(biasstrs)
     p2 = semilogx(trange,mean(pairwise_diff,1)+2*std(pairwise_diff),'Color','b','LineWidth',1.5,'LineStyle','--');
     p3 = semilogx(trange,mean(pairwise_diff,1)-2*std(pairwise_diff),'Color','b','LineWidth',1.5,'LineStyle','--');
     xlabel('Time (Days)'); 
-    xlim([trange(2),max(trange)]); ylim([0,1]);
+    xlim([trange(2),max(trange)]); ylim([0,1.05]);
     xticks([0.01,1,100]); yticks([0,0.5,1]);
     if k == 1
         ylabel('Relative Pairwise Difference'); 
@@ -61,15 +61,15 @@ for k = 1:length(biasstrs)
     end
     set(gca,'FontSize',24);
     if strcmp(biasstrs{k},'_ant')
-        title('Anterograde Biased Regime','FontSize',28);
+        title('Anterograde-Biased Regime','FontSize',28);
     elseif strcmp(biasstrs{k},'_ret')
-        title('Retrograde Biased Regime','FontSize',28);
+        title('Retrograde-Biased Regime','FontSize',28);
     elseif strcmp(biasstrs{k},'_mixed')
-        title('Net Unbiased Regime','FontSize',28);
+        title('Net-Unbiased Regime','FontSize',28);
     end
     
     hold off;
-    clearvars -except savenclose fpath simstr biasstrs
+    clearvars -except savenclose fpath simstr biasstrs outpath
 end
 
 if savenclose

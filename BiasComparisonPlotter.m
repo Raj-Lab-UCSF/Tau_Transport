@@ -51,7 +51,8 @@ for i = 1:length(svals_adl_vec)
     svals_adl_bias(i) = bias(ind);
     tpts_adl_bias(i) = trange(ind);
 end
-gof_adl = corr(svals_adl_bias.',svals_adl_vec.')^2;
+mdl_adl = fitlm(svals_adl_bias.',svals_adl_vec.');
+gof_adl = mdl_adl.Rsquared.Adjusted;
 
 subplot(1,2,1)
 markers = {'o','s','d'};
@@ -61,7 +62,6 @@ hold on;
 for i = 1:length(svals_adl)
     scatter(tpts_adl{i},svals_adl{i},250,[0.5 0.5 0.5],markers{i},'filled'); 
 end
-% scatter(tpts_adl_vec,svals_adl_vec,300,'bx');
 ylabel('Bias');
 xlabel('t (Days)');
 ylim([-1,1])
@@ -72,7 +72,7 @@ set(gca, 'FontSize', 24)
 [~,objh] = legend(lgnd,'Location','northeast','FontSize',24);
 objhl = findobj(objh, 'Type', 'patch');
 set(objhl, 'MarkerSize', 12);
-text(300,-0.8,['R^{2} = ' sprintf('%.2f',gof_adl)],'FontSize',28)
+text(300,-0.7,['R^{2} = ' sprintf('%.2f',gof_adl)],'FontSize',24)
 
 % Non-AD-like studies
 matstr = 'bias_comparison_simulation_nadl.mat';
@@ -102,6 +102,7 @@ for i = 1:length(svals_nadl)
     tpts_nadl_vec = [tpts_nadl_vec, tpts_nadl{i}];
     lgnd{i+1} = nadl_names{i};
 end
+% lgnd{end+1} = 'Study Mean';
 
 tpts_nadl_vec = tpts_nadl_vec(~isnan(svals_nadl_vec));
 svals_nadl_vec = svals_nadl_vec(~isnan(svals_nadl_vec));
@@ -123,8 +124,8 @@ for i = 1:length(svals_nadl_vec)
     svals_nadl_bias(i) = bias(ind);
     tpts_nadl_bias(i) = trange(ind);
 end
-
-gof_nadl = corr(svals_nadl_bias.',svals_nadl_vec.')^2;
+mdl_nadl = fitlm(svals_nadl_bias.',svals_nadl_vec.');
+gof_nadl = mdl_nadl.Rsquared.Adjusted;
 
 subplot(1,2,2);
 markers = {'o','p','s','d','^','v','>','<','h'};
@@ -143,7 +144,7 @@ set(gca, 'FontSize', 24)
 [~,objh] = legend(lgnd,'Location','northeast','FontSize',24);
 objhl = findobj(objh, 'Type', 'patch');
 set(objhl, 'MarkerSize', 12);
-text(300,-0.8,['R^{2} = ' sprintf('%.2f',gof_nadl)],'FontSize',28)
+text(300,-0.7,['R^{2} = ' sprintf('%.2f',gof_nadl)],'FontSize',24)
 
 if savenclose
     if ~isfolder(outpath)
@@ -165,7 +166,7 @@ yticks(-1:0.5:1); xticks(-1:0.25:1);
 set(gca,'FontSize',28);
 legend({['AD-Like Studies - R^{2} = ' sprintf('%.2f',gof_adl)],...
     ['Non-AD-Like Studies - R^{2} = ' sprintf('%.2f',gof_nadl)]},...
-    'FontSize',24,'Location','northwest');
+    'FontSize',22,'Location','northwest');
 
 if savenclose
     print([outpath filesep 'bias_comparison_gof'],'-dpng','-r300');

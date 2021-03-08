@@ -8,7 +8,7 @@ The following code was developed for running the tau axonal transport model desc
 ## 1. Setup
 All code is written in MATLAB and has been tested in versions 2019b and 2020a. However, the developers do not anticipate difficulties with using previous MATLAB versions for any of the functions contained within this package. There are no toolboxes required to run the model, but the Statistics & Machine Learning Toolbox is required for the `corr.m` function.
 
-In order to reproduce the figures within the manuscript, we have provided the model outputs in a separate folder named [SampleFiles](https://drive.google.com/file/d/1_p0EdLYk71mrH08Ksny27PP3-KG47-P1/view?usp=sharing), which contains all of the simulation results required as well as the network bias data from [Mezias & Raj, 2020](https://www.biorxiv.org/content/10.1101/2020.11.06.371625v1).
+In order to reproduce the figures within the manuscript, we have provided the model outputs in a separate folder named [SampleFiles](https://drive.google.com/file/d/1ZYeZ99V5h8n2cUvYBUiF2TOeKVAtHc65/view?usp=sharing), which contains all of the simulation results required as well as the network bias data from [Mezias & Raj, 2020](https://www.biorxiv.org/content/10.1101/2020.11.06.371625v1).
 
 ## 2. Files
 Below is a short description of each of the code files contained in the **Tau_Transport** repository, grouped by general functionality in alphabetical order. Scripts that are also functions have their inputs and outputs described, with required inputs in boldface text and optional inputs with their default setting in parentheses.
