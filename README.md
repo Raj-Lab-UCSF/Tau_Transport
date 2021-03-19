@@ -6,7 +6,7 @@ Email: jut2008@med.cornell.edu
 The following code was developed for running the tau axonal transport model described in Torok, *et al.*, 2021 (***insert bioRxiv link here***), along with all of the auxilliary functions required for plotting the outputs as shown in the manuscript.
 
 ## 1. Setup
-All code is written in MATLAB and has been tested in versions 2019b and 2020a. However, the developers do not anticipate difficulties with using previous MATLAB versions for any of the functions contained within this package. There are no toolboxes required to run the model, but the Statistics & Machine Learning Toolbox is required for the `corr.m` function.
+All code is written in MATLAB and has been tested in versions 2019b and 2020a. However, the developers do not anticipate difficulties with using other MATLAB versions for any of the functions contained within this package. There are no toolboxes required to run the model, but the Statistics & Machine Learning Toolbox is required for the `corr.m` function.
 
 In order to reproduce the figures within the manuscript, we have provided the model outputs in a separate folder named [SampleFiles](https://drive.google.com/file/d/1ZYeZ99V5h8n2cUvYBUiF2TOeKVAtHc65/view?usp=sharing), which contains all of the simulation results required as well as the network bias data from [Mezias & Raj, 2020](https://www.biorxiv.org/content/10.1101/2020.11.06.371625v1).
 
