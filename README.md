@@ -3,7 +3,7 @@ Lead Author: [Justin Torok](http://github.com/justin-torok)
 
 Email: jut2008@med.cornell.edu
 
-The following code was developed for running the tau axonal transport model described in Torok, *et al.*, 2021 (***insert bioRxiv link here***), along with all of the auxilliary functions required for plotting the outputs as shown in the manuscript.
+The following code was developed for running the tau axonal transport model described in Torok, *et al.*, 2021 (preprint [here](https://www.biorxiv.org/content/10.1101/2021.03.22.436470v1)), along with all of the auxilliary functions required for plotting the outputs as shown in the manuscript.
 
 ## 1. Setup
 All code is written in MATLAB and has been tested in versions 2019b and 2020a. However, the developers do not anticipate difficulties with using other MATLAB versions for any of the functions contained within this package. There are no toolboxes required to run the model, but the Statistics & Machine Learning Toolbox is required for the `corr.m` function.
@@ -14,7 +14,7 @@ In order to reproduce the figures within the manuscript, we have provided the mo
 Below is a short description of each of the code files contained in the **Tau_Transport** repository, grouped by general functionality in alphabetical order. Scripts that are also functions have their inputs and outputs described, with required inputs in boldface text and optional inputs with their default setting in parentheses.
 
 ### Running the Model
-- `TauTransportPDE.m`: The core function used to generate all model outputs, which solves a system of coupled 1D PDEs to determine the spatiotemporal profiles of soluble and insoluble pathological tau (refer to Torok, *et al.*, 2021(***insert bioRxiv here***) and the documentation inside of the function itself for full model details). All inputs are optional and specified as keyword arguments using `inputParser`. This function uses the MATLAB builtin `pdepe`, whose documentation can be found [here](https://www.mathworks.com/help/matlab/ref/pdepe.html); we recommend users familiarize themselves with `pdepe` before attempting to modify this function. The wrapper scripts described below are designed to reproduce the output files required for the various analyses explored in the manuscript, and we suggest that users use these as templates for running the model as opposed to directly calling this function. 
+- `TauTransportPDE.m`: The core function used to generate all model outputs, which solves a system of coupled 1D PDEs to determine the spatiotemporal profiles of soluble and insoluble pathological tau (refer to [Torok, *et al.*, 2021](https://www.biorxiv.org/content/10.1101/2021.03.22.436470v1) and the documentation inside of the function itself for full model details). All inputs are optional and specified as keyword arguments using `inputParser`. This function uses the MATLAB builtin `pdepe`, whose documentation can be found [here](https://www.mathworks.com/help/matlab/ref/pdepe.html); we recommend users familiarize themselves with `pdepe` before attempting to modify this function. The wrapper scripts described below are designed to reproduce the output files required for the various analyses explored in the manuscript, and we suggest that users use these as templates for running the model as opposed to directly calling this function. 
     - ***Inputs***:
         - *`alpha`: Linear growth rate term (default = 0)*
         - `beta`: Unimolecular fragmentation rate (default = 1e-06)
