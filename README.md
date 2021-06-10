@@ -55,7 +55,12 @@ While several of these functions are hard-coded to load specific model output fi
         - `savenclose`: Binary flag that, if set to 1, will save all figures as 300 DPI .png files in a folder called "OutputFigures" within the `basepath` directory (default = 0)
         - `basepath`: Character array specifying the enclosing folder of the "SampleFiles" directory, where the required dependencies are stored (default = cd)
     - ***Outputs*** (none)
-- `ConvergencePlotter.m`: Produces plots of model convergence with respect to initial conditions for three combinations of `delta` and `epsilon` values. Model outputs used by this function were generated using the `TauTransportPDE_Wrapper_RandomIC.m` wrapper script structure, with different parameter inputs.
+- `ConvergencePlotter_RandomInit.m`: Produces plots of model convergence with respect to initial conditions for three combinations of `delta` and `epsilon` values. Model outputs used by this function were generated using the `TauTransportPDE_Wrapper_RandomIC.m` wrapper script structure, with different parameter inputs.
+    - ***Inputs***:
+        - `savenclose`: Binary flag that, if set to 1, will save all figures as 300 DPI .png files in a folder called "OutputFigures" within the `basepath` directory (default = 0)
+        - `basepath`: Character array specifying the enclosing folder of the "SampleFiles" directory, where the required dependencies are stored (default = cd)
+    - ***Outputs*** (none)
+- `ConvergencePlotter_SingleSim.m`: Produces plots of model convergence with respect to rate of change in tau distribution over time. Fits an exponential to the tail of the distribution to quantify convergence rate. Model outputs used by this function were generated using the `TauTransportPDE_Wrapper_Single.m` wrapper script structure, with different parameter inputs.
     - ***Inputs***:
         - `savenclose`: Binary flag that, if set to 1, will save all figures as 300 DPI .png files in a folder called "OutputFigures" within the `basepath` directory (default = 0)
         - `basepath`: Character array specifying the enclosing folder of the "SampleFiles" directory, where the required dependencies are stored (default = cd)
