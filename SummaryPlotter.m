@@ -16,11 +16,9 @@ titles = {'Anterograde-Biased Regime','Retrograde-Biased Regime','Net Unbiased R
 figure('Units', 'inch', 'Position', [0 0 28 8]);
 for i = 1:length(matstrs)
     load([fpath filesep filestr matstrs{i} '.mat'],'N1','N2','M1','M2','trange');
-    bias = (N2+M2-N1-M1)./(N1+N2+M1+M2+eps);
     trange = trange/86400; % convert seconds --> days
 
     subplot(1,3,i)
-    yyaxis left
     hold off;
     semilogx(trange,N1,'Color',[1 0 0],'LineStyle','-','LineWidth',3);
     hold on;
@@ -32,11 +30,46 @@ for i = 1:length(matstrs)
     end
     ylim([0,0.25])
     yticks([0,0.05,0.1,0.15,0.2]);
-%     if i == 1
-%         yticklabels({'0','0.05','0.1','0.15','0.2'});
-%     else
-%         yticklabels({''})
-%     end
+    set(gca,'ycolor','k');
+    xlabel('t (Days)');
+    xticks([0.01,1,100])
+    xlim([0,max(trange)])
+    title(titles{i});
+    set(gca, 'FontSize', 24, 'ycolor', 'k')
+    if i == 1
+        legend({'Presynaptic Soluble','Postsynaptic Soluble',...
+            'Presynaptic Insoluble','Postsynaptic Insoluble'},...
+            'Location','northwest','FontSize',18)
+    end
+    clear N1 N2 M1 M2 trange
+end
+tightfig;
+if savenclose
+    if ~isfolder(outpath)
+        mkdir(outpath)
+    end
+    print([outpath filesep 'summary_plots_v2'],'-dpng','-r300');
+    close;
+end
+
+figure('Units', 'inch', 'Position', [0 0 28 8]);
+for i = 1:length(matstrs)
+    load([fpath filesep filestr matstrs{i} '.mat'],'N1','N2','M1','M2','trange');
+    bias = (N2+M2-N1-M1)./(N1+N2+M1+M2+eps);
+    trange = trange/86400; % convert seconds --> days
+
+    subplot(1,3,i)
+    yyaxis left
+    hold off;
+    semilogx(trange,N1+M1,'Color',[0.5 0 1],'LineStyle','-','LineWidth',3);
+    hold on;
+    semilogx(trange,N2+M2,'Color',[0.5 0 1],'LineStyle','-.','LineWidth',3);
+    if i == 1
+        ylabel('Mean Somatodendritic Tau (\muM)');
+    end
+    ylim([0,0.35])
+    yticks([0,0.075,0.15,0.225,0.3]);
+    ytickformat('%.2f');
     set(gca,'ycolor','k');
     yyaxis right
     semilogx(trange,bias,'Color',[1 0 1],'LineStyle',':','LineWidth',3);
@@ -48,11 +81,9 @@ for i = 1:length(matstrs)
     if i == 3
         ylabel('Bias Between S.D. Compartments')
     end
-    title(titles{i});
     set(gca, 'FontSize', 24, 'ycolor', 'k')
     if i == 1
-        legend({'Presynaptic Soluble','Postsynaptic Soluble',...
-            'Presynaptic Insoluble','Postsynaptic Insoluble','Net Bias'},...
+        legend({'Total Presynaptic','Total Postsynaptic','Net Bias'},...
             'Location','northwest','FontSize',18)
     end
     clear N1 N2 M1 M2 trange bias
@@ -62,7 +93,8 @@ if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep 'summary_plots'],'-dpng','-r300');
+    print([outpath filesep 'summary_plots_total_bias'],'-dpng','-r300');
     close;
 end
+
 end

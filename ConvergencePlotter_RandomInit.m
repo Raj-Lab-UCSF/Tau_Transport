@@ -1,4 +1,4 @@
-function ConvergencePlotter(savenclose,basepath)
+function ConvergencePlotter_RandomInit(savenclose,basepath)
 % Takes a few minutes to run given the overhead with calculating pairwise
 % relative error
 

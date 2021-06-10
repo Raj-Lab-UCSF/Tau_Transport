@@ -14,7 +14,7 @@ beta = 1e-6; % default = 1e-6
 gamma = 2e-5; % default = 2e-5
 delta = 1; % default for anterograde/retrograde/no-bias = 1/0.01/1
 epsilon = 0.01; % default for anterograde/retrograde/no-bias = 0.01/1/0.35
-frac = 0.7; % default = 0.92
+frac = 0.92; % default = 0.92
 alpha = 0; % Not explored in the model (default = 0)
 
 % 2b. Define other parameters
