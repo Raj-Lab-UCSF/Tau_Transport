@@ -43,12 +43,13 @@ for i = 1:length(matstrs)
     end
     clear N1 N2 M1 M2 trange
 end
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 tightfig;
 if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep 'summary_plots_v2'],'-dpng','-r300');
+    print([outpath filesep 'summary_plots'],'-dtiffn','-r300');
     close;
 end
 
@@ -81,19 +82,20 @@ for i = 1:length(matstrs)
     if i == 3
         ylabel('Bias Between S.D. Compartments')
     end
-    set(gca, 'FontSize', 24, 'ycolor', 'k')
+    set(gca, 'FontSize', 24, 'ycolor', 'k', 'FontName', 'Times')
     if i == 1
         legend({'Total Presynaptic','Total Postsynaptic','Net Bias'},...
             'Location','northwest','FontSize',18)
     end
     clear N1 N2 M1 M2 trange bias
 end
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 tightfig;
 if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep 'summary_plots_total_bias'],'-dpng','-r300');
+    print([outpath filesep 'summary_plots_total_bias'],'-dtiffn','-r300');
     close;
 end
 

@@ -84,12 +84,13 @@ for k = 1:length(biasstrs)
         sprintf('R^2 = %.2f',mdl.Rsquared.Adjusted),'FontSize',16);
     set(gca,'FontSize',16);
 end
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 
 if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep 'convergence_single'],'-dpng','-r300');
+    print([outpath filesep 'convergence_single'],'-dtiffn','-r300');
     close;
 end
 

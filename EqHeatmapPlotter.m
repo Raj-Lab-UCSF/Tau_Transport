@@ -63,16 +63,17 @@ for k = 1:length(filenames)
     xticklabels([min(deltalist) mean(deltalist) max(deltalist)]);
     yticklabels([min(epsilonlist) mean(epsilonlist) max(epsilonlist)]);
     set(gca,'FontSize',24,'ydir','normal','TickLength',[0 0]);
-    text(textpos(k,1),textpos(k,2),['\delta = ' sprintf('%.3f + %.3f',p0(2),p0(1)) '*\epsilon'],'FontSize',22)
+    text(textpos(k,1),textpos(k,2),['\delta = ' sprintf('%.2f + %.2f',p0(2),p0(1)) '*\epsilon'],'FontSize',22)
     title(plottitles{k}); 
     clear biasmat;
 end
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 tightfig;
 if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep 'heatmap_plot_' paramname],'-dpng','-r300');
+    print([outpath filesep 'heatmap_plot_' paramname],'-dtiffn','-r300');
     close;
 end
 
@@ -81,9 +82,9 @@ imagesc(linspace(-1,1,1001).'); colormap redblue
 set(gca,'FontSize',24,'ydir','normal','TickLength',[0 0]);
 yticks([1 501 1001]); xticks([]); 
 yticklabels([-1 0 1]);
-
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 if savenclose
-    print([outpath filesep 'heatmap_colorbar_' paramname],'-dpng','-r300');
+    print([outpath filesep 'heatmap_colorbar_' paramname],'-dtiffn','-r300');
     close;
 end
 end

@@ -69,6 +69,7 @@ for i = 1:length(customt)
         ylabel('Tau Concentration (\muM)','Color',[0.15 0.15 0.15],'FontWeight','bold')
         set(gca,'YColor',[0.15 0.15 0.15])
         legend({'Soluble','Insoluble'});
+        ytickformat('%.2f');
     else
         set(gca,'YTickLabels',{});
     end
@@ -100,12 +101,12 @@ for i = 1:length(customt)
     end
     set(gca, 'FontSize', 18);
 end
-
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep matstr],'-dpng','-r300');
+    print([outpath filesep matstr],'-dtiffn','-r300');
     close;
 end
 end

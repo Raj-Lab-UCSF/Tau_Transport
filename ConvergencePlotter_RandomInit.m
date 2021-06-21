@@ -71,12 +71,13 @@ for k = 1:length(biasstrs)
     hold off;
     clearvars -except savenclose fpath simstr biasstrs outpath
 end
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 
 if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep simstr],'-dpng','-r300');
+    print([outpath filesep simstr],'-dtiffn','-r300');
     close;
 end
 end

@@ -69,7 +69,7 @@ xlim([0,max(trange)])
 yticks(-1:0.5:1);
 title('AD-Like Mouse Studies','FontSize',28);
 set(gca, 'FontSize', 24)
-[~,objh] = legend(lgnd,'Location','northeast','FontSize',24);
+[~,objh] = legend(lgnd,'Location','northeast','FontSize',24,'FontName','Times');
 objhl = findobj(objh, 'Type', 'patch');
 set(objhl, 'MarkerSize', 12);
 text(300,-0.7,['R^{2} = ' sprintf('%.2f',gof_adl)],'FontSize',24)
@@ -141,16 +141,16 @@ ylim([-1,1])
 yticks(-1:0.5:1);
 title('Non AD-Like Mouse Studies','FontSize',28);
 set(gca, 'FontSize', 24)
-[~,objh] = legend(lgnd,'Location','northeast','FontSize',24);
+[~,objh] = legend(lgnd,'Location','northeast','FontSize',24,'FontName','Times');
 objhl = findobj(objh, 'Type', 'patch');
 set(objhl, 'MarkerSize', 12);
 text(300,-0.7,['R^{2} = ' sprintf('%.2f',gof_nadl)],'FontSize',24)
-
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep 'bias_comparison_vs_t'],'-dpng','-r300');
+    print([outpath filesep 'bias_comparison_vs_t'],'-dtiffn','-r300');
     close;
 end
 
@@ -167,9 +167,10 @@ set(gca,'FontSize',28);
 legend({['AD-Like Studies - R^{2} = ' sprintf('%.2f',gof_adl)],...
     ['Non-AD-Like Studies - R^{2} = ' sprintf('%.2f',gof_nadl)]},...
     'FontSize',22,'Location','northwest');
+set(findall(gcf,'-property','FontName'),'FontName','Times')
 
 if savenclose
-    print([outpath filesep 'bias_comparison_gof'],'-dpng','-r300');
+    print([outpath filesep 'bias_comparison_gof'],'-dtiffn','-r300');
     close;
 end
 end
