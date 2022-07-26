@@ -39,7 +39,7 @@ for i = 1:length(matstrs)
     if i == 1
         legend({'Presynaptic Soluble','Postsynaptic Soluble',...
             'Presynaptic Insoluble','Postsynaptic Insoluble'},...
-            'Location','northwest','FontSize',18)
+            'Location','northwest','FontSize',24)
     end
     clear N1 N2 M1 M2 trange
 end
@@ -49,7 +49,7 @@ if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep 'summary_plots'],'-dtiffn','-r300');
+    print([outpath filesep 'summary_plots'],'-dpng','-r300');
     close;
 end
 
@@ -85,7 +85,7 @@ for i = 1:length(matstrs)
     set(gca, 'FontSize', 24, 'ycolor', 'k', 'FontName', 'Times')
     if i == 1
         legend({'Total Presynaptic','Total Postsynaptic','Net Bias'},...
-            'Location','northwest','FontSize',18)
+            'Location','northwest','FontSize',24)
     end
     clear N1 N2 M1 M2 trange bias
 end
@@ -95,7 +95,7 @@ if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep 'summary_plots_total_bias'],'-dtiffn','-r300');
+    print([outpath filesep 'summary_plots_total_bias'],'-dpng','-r300');
     close;
 end
 

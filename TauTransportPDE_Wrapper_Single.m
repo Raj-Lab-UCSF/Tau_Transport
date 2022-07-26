@@ -2,23 +2,24 @@
 % parameter sets
 
 % 1. Define directories for saving outputs
-curpath = '~/Documents/MATLAB';
+curpath = '~/Documents/MATLAB/Tau_Transport';
 simpath = [curpath filesep 'SampleFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'test'; % for saving the outputs
+simstr = 'lambda12_test_diffonly'; % for saving the outputs
 
 % 2a. Define actively tuned parameters 
 beta = 1e-6; % default = 1e-6
 gamma = 2e-5; % default = 2e-5
-delta = 1; % default for anterograde/retrograde/no-bias = 1/0.01/1
-epsilon = 0.01; % default for anterograde/retrograde/no-bias = 0.01/1/0.35
+delta = 0; % default for anterograde/retrograde/no-bias = 1/0.01/1
+epsilon = 0; % default for anterograde/retrograde/no-bias = 0.01/1/0.35
 frac = 0.92; % default = 0.92
 alpha = 0; % Not explored in the model (default = 0)
 
 % 2b. Define other parameters
-lambda = 0.01; % default = 0.01
+lambda1 = 0.01; % default = 0.01
+lambda2 = 0.05; % default = 0.01
 L_int = 1000; % default = 1000; in microns
 L1 = 200; % default = 200
 L2 = 200; % default = 200
@@ -50,7 +51,8 @@ resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise
                                 'gamma', gamma,...
                                 'delta', delta,...
                                 'epsilon', epsilon,...
-                                'lambda', lambda,...
+                                'lambda1', lambda1,...
+                                'lambda2', lambda2,...
                                 'L_int', L_int,...
                                 'L1', L1,...
                                 'L2', L2,...

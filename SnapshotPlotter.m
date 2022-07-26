@@ -106,7 +106,7 @@ if savenclose
     if ~isfolder(outpath)
         mkdir(outpath)
     end
-    print([outpath filesep matstr],'-dtiffn','-r300');
+    print([outpath filesep matstr],'-dtiffn','-r600');
     close;
 end
 end

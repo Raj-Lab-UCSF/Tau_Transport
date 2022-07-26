@@ -27,7 +27,8 @@ function [n, m, xmesh, trange, jn, jm] = TauTransportPDE(varargin)
 % (1/uM)
 % epsilon (contained in v): rate of anterograde transport inhibition by aggs
 % (1/uM)
-% lambda: scaling constant of the rate of diffusion across GM-WM boundaries
+% lambda1: scaling constant of the rate of diffusion across the AIS
+% lambda2: scaling constant of the rate of diffusion across the SC
 %
 % Secondary parameters (inputs)
 % N1: Initial concentration of soluble tau in GM compartment 1
@@ -68,7 +69,8 @@ beta_ = 1e-06;
 gamma_ = 2e-05;
 delta_ = 1;
 epsilon_ = 0.01;
-lambda_ = 0.01;
+lambda1_ = 0.01;
+lambda2_ = 0.01;
 frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
 L_int_ = 1000; % in micrometers
 L1_ = 200;
@@ -94,7 +96,8 @@ addParameter(ip, 'gamma', gamma_, validScalar);
 addParameter(ip, 'delta', delta_, validScalar);
 addParameter(ip, 'epsilon', epsilon_, validScalar);
 addParameter(ip, 'frac', frac_, validScalar);
-addParameter(ip, 'lambda', lambda_, validScalar);
+addParameter(ip, 'lambda1', lambda1_, validScalar);
+addParameter(ip, 'lambda2', lambda2_, validScalar);
 addParameter(ip, 'L_int', L_int_, validScalar);
 addParameter(ip, 'L1', L1_, validScalar);
 addParameter(ip, 'L2', L2_, validScalar);
@@ -176,13 +179,13 @@ end
     end
     end
 
-    function maskval = aissyn_mask(x)
+    function maskval = ais_mask(x)
     % Defines the spatial mask as a function of x position, returning 1 if
     % the compartment is in the AIS/synapse and 0 elsewhere. Used for
     % controlling the diffusivity of soluble tau through lambda.
     
     if axon_mask(x)
-        if  x < ip.Results.L1+ip.Results.L_ais || x > ip.Results.L1+ip.Results.L_int-ip.Results.L_syn
+        if  x < ip.Results.L1+ip.Results.L_ais
             maskval = 1;
         else
             maskval = 0;
@@ -207,11 +210,14 @@ end
         maskval = 0;
     end
     end
+
     function [c,f,s] = pdex4pde(x,t,u,DuDx)
     % This creates a function handle to pass to the PDE solver for the coupled 
     % set of equations stated above.
     
-    diff_op = @(z) (1-aissyn_mask(z))*diff_n + aissyn_mask(z)*ip.Results.lambda*diff_n; 
+    aissyn_mask = @(x_) (logical(ais_mask(x_)) || logical(syn_mask(x_)));
+    diff_op = @(z) (1-aissyn_mask(z))*diff_n + ais_mask(z)*ip.Results.lambda1*diff_n...
+        + syn_mask(z)*ip.Results.lambda2*diff_n; 
     c = [1; 1];
     v = (1-aissyn_mask(x))*axon_mask(x)*(v_a*(1+ip.Results.delta*u(1))*(1-ip.Results.epsilon*u(2)) - v_r);
 
@@ -254,8 +260,10 @@ end
     % Calculates the approximate flux for a given 1D concentration profile
     % (prof) over its domain (xrange), used for plotting.
     Jn = zeros(1,length(xrange)); Jm = Jn;
-    diff_op_n = @(z)(1-aissyn_mask(z))*diff_n + aissyn_mask(z)*ip.Results.lambda*diff_n;
-    diff_op_m = @(z)(1-aissyn_mask(z))*diff_n*diff_ratio + aissyn_mask(z)*ip.Results.lambda*diff_n*diff_ratio;
+    aissyn_mask = @(x_) (logical(ais_mask(x_)) || logical(syn_mask(x_)));
+    diff_op_n = @(z) (1-aissyn_mask(z))*diff_n + ais_mask(z)*ip.Results.lambda1*diff_n...
+        + syn_mask(z)*ip.Results.lambda2*diff_n; 
+    diff_op_m = @(z) diff_op_n(z) * diff_ratio;
     for i = 1:length(xrange)
         if i == 1 || i == length(xrange)
             Jn(i) = 0; Jm(i) = 0;
