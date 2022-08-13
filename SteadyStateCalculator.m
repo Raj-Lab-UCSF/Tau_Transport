@@ -102,7 +102,7 @@ m_init = m_init0 * rescale_factor;
 
 % % % 5. Definition of Steady-State Function
 A = 0; % Specified to be 0 for Neumann BC
-% B0 = 0.04; % Initialization of B
+B0 = 0.04; % Initialization of B
 % % % 5a. Steady State of Presynaptic Somatodendritic Compartment
 % Follows the derivation of Michiel Bertsh
 presyn_mask = spatial_mask('presyn');
@@ -136,7 +136,7 @@ nx_init = @(B_) (-A*x1 + diff_n*B_ - A*(x2 - x1)/ip.Results.lambda1)/diff_n;
 %     (1 - (ip.Results.gamma.*ip.Results.epsilon.*nx_.^2)./(ip.Results.beta - ...
 %     ip.Results.gamma.*nx_)) - v_r)).^(-1),nx2(B),nx);
 % n_ss_axon = @(B,x) fsolve(@(nx)n_ss_axon_fun(nx,B,x),nx_init);
-options = odeset('RelTol',1e-6,'AbsTol',1e-8);
+options = odeset('RelTol',1e-4,'AbsTol',1e-4);
 odefun = @(x,nx_,B) (-A/ip.Results.frac +...
     ((1 - ip.Results.frac).*nx_./ip.Results.frac) .* (v_a.*(1 + ip.Results.delta.*nx_).*...
     (1 - (ip.Results.gamma.*ip.Results.epsilon.*nx_.^2)./(ip.Results.beta - ...
@@ -195,29 +195,41 @@ total_ss_funs = cell(1,length(n_ss_funs));
 for i = 1:length(total_ss_funs)
     total_ss_funs{i} = @(B) n_ss_funs{i}(B) + m_ss_funs{i}(B);
 end
+
+tic;
+% Testing with fmincon
+numvals = 5;
 int_total_ss = @(B) cell_integral(B,total_ss_funs,xmesh);
 int_fun = @(B) 100*abs(ip.Results.total_mass - int_total_ss(B))/ip.Results.total_mass;
-% Btest = B_fun(B0);
-% options = optimoptions('fmincon','Display','iter','OptimalityTolerance',1e-5,...
-%     'StepTolerance',1e-5,'ConstraintTolerance',1e-5,'Algorithm','sqp');
-tic;
-% B_ss = fmincon(B_fun, B0,[],[],[],[],0,ip.Results.beta/ip.Results.gamma,[],options);
-numvals = 50;
 B_ss_test = linspace(0.5*ip.Results.beta/ip.Results.gamma,0.95*ip.Results.beta/ip.Results.gamma,numvals);
 int_ss_test = zeros(1,length(B_ss_test));
 for i = 1:length(B_ss_test)
-    fprintf('Iter %d/%d \n',i,length(B_ss_test))
+    fprintf('Initialization iter %d/%d \n',i,length(B_ss_test))
     int_ss_test(i) = int_fun(B_ss_test(i));
 end
-[intmin,intind] = min(int_ss_test);
-B_ss = B_ss_test(intind);
+[~,intind] = min(int_ss_test);
+B_ss0 = B_ss_test(intind);
+options = optimoptions('fmincon','Display','iter','OptimalityTolerance',1e-4,...
+    'StepTolerance',1e-4,'ConstraintTolerance',1e-4);
+B_ss = fmincon(int_fun, B_ss0,[],[],[],[],0,ip.Results.beta/ip.Results.gamma,[],options);
+
+% Grid search
+% numvals = 50;
+% B_ss_test = linspace(0.5*ip.Results.beta/ip.Results.gamma,0.95*ip.Results.beta/ip.Results.gamma,numvals);
+% int_ss_test = zeros(1,length(B_ss_test));
+% for i = 1:length(B_ss_test)
+%     fprintf('Iter %d/%d \n',i,length(B_ss_test))
+%     int_ss_test(i) = int_fun(B_ss_test(i));
+% end
+% [intmin,intind] = min(int_ss_test);
+% B_ss = B_ss_test(intind);
 toc;
 n_ss = zeros(1,length(n_ss_funs)); m_ss = n_ss;
 for i = 1:length(n_ss)
     n_ss(i) = n_ss_funs{i}(B_ss);
     m_ss(i) = m_ss_funs{i}(B_ss);
 end
-fprintf('Percent Error = %0.2f \n',intmin)
+fprintf('Percent Error = %0.2f \n',int_fun(B_ss))
 
 % % % 7. Other functions
     function [maskvals] = spatial_mask(compartment)
