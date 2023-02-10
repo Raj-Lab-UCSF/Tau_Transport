@@ -1,5 +1,6 @@
 % Wrapper script for generating output files for TauTransportPDE for single
 % parameter sets
+clear; clc; 
 
 % 1. Define directories for saving outputs
 curpath = '~/Documents/MATLAB/Tau_Transport';
@@ -7,13 +8,13 @@ simpath = [curpath filesep 'SampleFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'constant_n0_L1000_fine_nob'; % for saving the outputs
+simstr = 'constant_n0_L1000_fine_ant_neumann_noct'; % for saving the outputs
 
 % 2a. Define actively tuned parameters 
 beta = 1e-6; % default = 1e-6
 gamma = 2e-5; % default = 2e-5
 delta = 1; % default for anterograde/retrograde/no-bias = 1/0.01/1
-epsilon = 0.35; % default for anterograde/retrograde/no-bias = 0.01/1/0.35
+epsilon = 0.01; % default for anterograde/retrograde/no-bias = 0.01/1/0.35
 frac = 0.92; % default = 0.92
 alpha = 0; % Not explored in the model (default = 0)
 
@@ -29,10 +30,17 @@ T = 5e7; % default = 5e7
 tsteps = 250; % default = 250
 
 % 2c. Define ICs
-n0 = [zeros(1,L_ais), 20*ones(1,(L_int-L_ais-L_syn)), zeros(1,L_syn)]; % default = [zeros(1,L_ais), 20*ones(1,(L_int-L_ais-L_syn)), zeros(1,L_syn)]
+% n0 = [zeros(1,L_ais), 20*ones(1,(L_int-L_ais-L_syn)), zeros(1,L_syn)]; % default = [zeros(1,L_ais), 20*ones(1,(L_int-L_ais-L_syn)), zeros(1,L_syn)]
+% m0 = zeros(1,L_int); % default = zeros(1,L_int)
+% N1_0 = 0; % default = 0
+% N2_0 = 0; % default = 0
+% M1_0 = 0; % default = 0
+% M2_0 = 0; % default = 0
+
+n0 = zeros(1,L_int); % default = [zeros(1,L_ais), 20*ones(1,(L_int-L_ais-L_syn)), zeros(1,L_syn)]
 m0 = zeros(1,L_int); % default = zeros(1,L_int)
-N1_0 = 0; % default = 0
-N2_0 = 0; % default = 0
+N1_0 = 0.25; % default = 0
+N2_0 = 0.05; % default = 0
 M1_0 = 0; % default = 0
 M2_0 = 0; % default = 0
 n_init0 = [N1_0*ones(1,L1),n0,N2_0*ones(1,L2)];
@@ -43,7 +51,11 @@ nonnorm_total = trapz(n_init0) + trapz(m_init0);
 rescale_factor = total_mass/nonnorm_total; 
 
 % 2d. Define xmesh resolution
-resmesh = 'fine'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
+resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
+
+% 2e. Define BC type and if cross-terms are used
+use_ct = 0;
+use_dirichlet = 0;
 
 % 3. Run TauTransportPDE
 [n, m, xmesh, trange, jn, jm] = TauTransportPDE('alpha', alpha,...
@@ -67,7 +79,9 @@ resmesh = 'fine'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise s
                                 'tsteps', tsteps,...
                                 'resmesh', resmesh,...
                                 'L_ais', L_ais,...
-                                'L_syn', L_syn);
+                                'L_syn', L_syn,...
+                                'use_ct', use_ct,...
+                                'use_dirichlet', use_dirichlet);
 
 % 4. Calculate N1(t), N2(t), and n(x,t) (and M analogs)
 GM1_bound = find(xmesh == L1);

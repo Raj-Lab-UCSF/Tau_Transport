@@ -8,12 +8,12 @@ simpath = [curpath filesep 'SampleFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'constant_n0_L1000_ret_diri002002002002_t5e7_mass10_highergammabeta_fine'; % for saving the outputs
+simstr = 'constant_n0_L1000_ret_diri_t5e7_mass10_highergammabeta_fine'; % for saving the outputs
 
 % 2a. Define actively tuned parameters 
 beta = 1e-2; % default = 1e-6
 gamma = 2e-1; % default = 2e-5
-delta = 0.01; % default for anterograde/retrograde/no-bias = 1/0.01/1
+delta = 0.35; % default for anterograde/retrograde/no-bias = 1/0.01/1
 epsilon = 1; % default for anterograde/retrograde/no-bias = 0.01/1/0.35
 frac = 0.92; % default = 0.92
 alpha = 0; % Not explored in the model (default = 0)
@@ -45,12 +45,12 @@ Bn_r = 0.02;
 Bm_l = 0.02;
 Bm_r = 0.02;
 
-total_mass = 10; % default = 184, ensures all simulations have the same mass
+total_mass = 0.1; % default = 184, ensures all simulations have the same mass
 nonnorm_total = trapz(n_init0) + trapz(m_init0);
 rescale_factor = total_mass/nonnorm_total; 
 
 % 2d. Define xmesh resolution
-resmesh = 'fine'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
+resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 
 % 3. Run TauTransportPDE
 [n, m, xmesh, trange, jn, jm] = TauTransportPDE_Dirichlet('alpha', alpha,...

@@ -86,6 +86,8 @@ M2_0_ = 0;
 T_ = 5e7;
 tsteps_ = 1000;
 resmesh_ = 'fine';
+use_ct_ = 1;
+use_dirichlet_ = 0;
 
 ip = inputParser;
 validScalar = @(x) isnumeric(x) && isscalar(x) && (x>=0);
@@ -112,6 +114,8 @@ addParameter(ip, 'tsteps', tsteps_, validScalar);
 addParameter(ip, 'resmesh', resmesh_);
 addParameter(ip, 'L_ais', L_ais_);
 addParameter(ip, 'L_syn', L_syn_);
+addParameter(ip, 'use_ct', use_ct_);
+addParameter(ip, 'use_dirichlet', use_dirichlet_);
 parse(ip, varargin{:});
 
 % The input parser creates a struct, ip, that has fields initialized with
@@ -225,9 +229,15 @@ end
     f_m = diff_ratio*diff_op(x)*DuDx(2);
     f = [f_n; f_m];
 
-    s_n = (1-syn_mask(x))*(ip.Results.alpha + ip.Results.beta*u(2) - ip.Results.gamma*u(1)*(u(1)+u(2)));
-    s_m = (1-syn_mask(x))*(ip.Results.gamma*u(1)*(u(1)+u(2)) - ip.Results.beta*u(2));
-    s = [s_n; s_m];
+    if ip.Results.use_ct
+        s_n = (1-syn_mask(x))*(ip.Results.alpha + ip.Results.beta*u(2) - ip.Results.gamma*u(1)*(u(1)+u(2)));
+        s_m = (1-syn_mask(x))*(ip.Results.gamma*u(1)*(u(1)+u(2)) - ip.Results.beta*u(2));
+        s = [s_n; s_m];
+    else
+        s_n = (1-syn_mask(x))*(ip.Results.alpha + ip.Results.beta*u(2) - ip.Results.gamma*u(1)*u(1));
+        s_m = (1-syn_mask(x))*(ip.Results.gamma*u(1)*u(1) - ip.Results.beta*u(2));
+        s = [s_n; s_m];
+    end
     end
     % --------------------------------------------------------------
     function u0 = pdex4ic(x)
@@ -249,11 +259,17 @@ end
     % This creates a function handle to pass to the PDE solver for the
     % boundary conditions. These should be perfectly insulating/reflective
     % for the purposes of this problem.
-    
-    pl = [0; 0];
-    pr = [0; 0];
-    ql = [1; 1]; 
-    qr = [1; 1];
+    if ~ip.Results.use_dirichlet
+        pl = [0; 0];
+        pr = [0; 0];
+        ql = [1; 1]; 
+        qr = [1; 1];
+    else  
+        pl = [ul(1)-ip.Results.N1_0; ul(2)-ip.Results.M1_0];
+        pr = [ur(1)-ip.Results.N2_0; ur(2)-ip.Results.M2_0];
+        ql = [0; 0];
+        qr = [0; 0];
+    end
     end
 
     function [Jn,Jm] = fluxcalc(n,m,xrange)
