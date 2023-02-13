@@ -1,6 +1,6 @@
 function model_outputs = NetworkTransportModel(matdir,varargin)
 if nargin < 1
-    matdir = [cd filesep 'FromVeronica'];
+    matdir = [cd filesep 'SampleFiles'];
 end
 
 load([matdir filesep '220919_MouseDataforVeronica.mat'],'baseline_pathology'); 
@@ -31,6 +31,7 @@ plotting_ = 1;
 reltol_ = 1e-4;
 abstol_ = 1e-4;
 fsolvetol_ = 1e-6;
+volcorrect_ = 1;
 
 ip = inputParser;
 % validChar = @(x) ischar(x);
@@ -61,12 +62,20 @@ addParameter(ip, 'dt', dt_, validScalar);
 addParameter(ip, 'T', T_, validScalar);
 addParameter(ip, 'init_path', init_path_, validNonnegative);
 addParameter(ip, 'plotting', plotting_, validLogical);
+addParameter(ip, 'volcorrect', volcorrect_, validLogical);
 parse(ip, varargin{:});
 
 if strcmp(ip.Results.study,'custom') && ~isempty(ip.Results.init_path)
     init_tau = ip.Results.init_rescale * ip.Results.init_path;
 else
     init_tau = ip.Results.init_rescale * baseline_pathology.(ip.Results.study);
+end
+
+if logical(ip.Results.volcorrect)
+    load([matdir filesep 'regionvoxels.mat'],'voxels');
+    voxels_2hem = cat(1,voxels,voxels)/2; % approximation, splitting over the two hemispheres
+    Vcorr = mean(voxels_2hem) * diag(voxels_2hem.^(-1)); 
+    Conn = Vcorr * Conn; % correction proposed by Putra et al. 2021, adapted here
 end
 
 i_nonzero_init_tau = init_tau > 0;

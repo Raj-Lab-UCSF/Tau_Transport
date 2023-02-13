@@ -5,11 +5,11 @@
 clear; clc;
 curpath = cd;
 simpath = [curpath filesep 'SampleFiles'];
-loadpath = [curpath filesep 'SampleFiles'];
+loadpath = [curpath filesep 'FromVeronica'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'test2'; % for saving the outputs
+simstr = 'test3'; % for saving the outputs
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
@@ -52,17 +52,17 @@ reltol = 1e-4;
 abstol = 1e-4;
 fsolvetol = 1e-6;
 volcorrect = 1;
-ncores = 4;
+ncores = 2;
 
 %% 3. Run NetworkTransportModel
 output_struct = struct;
 output_struct.Parameter_Grid = paramgrid;   
 output_struct.Parameter_Names = inputparams(1,:);
 sim_struct = struct;
-parpool(ncores)
+% parpool(ncores)
 tic
-% for i = 1:size(paramgrid,1)
-parfor i = 1:size(paramgrid,1)
+for i = 1:size(paramgrid,1)
+% parfor i = 1:size(paramgrid,1)
     fprintf('Simulation %d/%d \n',i,size(paramgrid,1))
     paramlist = paramgrid(i,:);
     paramnames_i = paramnamescell(i,:); % prevents broadcast warning message
@@ -90,7 +90,7 @@ parfor i = 1:size(paramgrid,1)
     sim_struct(i).Model_Outputs = mdloutput;
 end
 output_struct.Simulations = sim_struct;
-delete(gcp('nocreate'));
+% delete(gcp('nocreate'));
 toc
 
 %% 4. Save output file
