@@ -1,25 +1,21 @@
 function model_outputs = NetworkTransportModel(matdir,varargin)
+% Translated from ode_modelBFRTT03_09.m
 if nargin < 1
-    matdir = [cd filesep 'SampleFiles'];
+    matdir = [cd filesep 'MatFiles'];
 end
-
-load([matdir filesep '220919_MouseDataforVeronica.mat'],'baseline_pathology'); 
-Conn = readmatrix([matdir filesep 'mouse_connectome_19_01.csv']);
-nroi = size(Conn,1);
-Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
 
 beta_ = 1e-06;
 gamma1_ = 2e-05;
-gamma2_ = 2e-06;
+gamma2_ = 0;
 delta_ = 1;
 epsilon_ = 0.01;
 lambda1_ = 0.01;
 lambda2_ = 0.01;
 study_ = 'Hurtado';
 init_path_ = [];
-init_rescale_ = 1e-4;
-dt_ = 0.005;
-T_ = 0.05;
+init_rescale_ = 1e-2;
+dt_ = 0.01;
+T_ = 0.1;
 frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
 L_int_ = 1000; % in micrometers
 L1_ = 200;
@@ -31,7 +27,9 @@ plotting_ = 1;
 reltol_ = 1e-4;
 abstol_ = 1e-4;
 fsolvetol_ = 1e-6;
-volcorrect_ = 1;
+connectome_subset_ = 'Hippocampus';
+time_scale_ = 1;
+len_scale_ = 1e-3;
 
 ip = inputParser;
 % validChar = @(x) ischar(x);
@@ -55,6 +53,9 @@ addParameter(ip, 'L_syn', L_syn_);
 addParameter(ip, 'reltol', reltol_, validScalar);
 addParameter(ip, 'abstol', abstol_, validScalar);
 addParameter(ip, 'fsolvetol', fsolvetol_, validScalar);
+addParameter(ip, 'connectome_subset', connectome_subset_);
+addParameter(ip, 'len_scale', len_scale_, validScalar);
+addParameter(ip, 'time_scale', time_scale_, validScalar);
 
 addParameter(ip, 'study', study_);
 addParameter(ip, 'init_rescale', init_rescale_, validScalar);
@@ -62,36 +63,85 @@ addParameter(ip, 'dt', dt_, validScalar);
 addParameter(ip, 'T', T_, validScalar);
 addParameter(ip, 'init_path', init_path_, validNonnegative);
 addParameter(ip, 'plotting', plotting_, validLogical);
-addParameter(ip, 'volcorrect', volcorrect_, validLogical);
 parse(ip, varargin{:});
 
-if strcmp(ip.Results.study,'custom') && ~isempty(ip.Results.init_path)
-    init_tau = ip.Results.init_rescale * ip.Results.init_path;
+load([matdir filesep 'Mouse_Tauopathy_Data_HigherQ.mat'],'mousedata_struct'); 
+load([matdir filesep 'DefaultAtlas.mat'],'DefaultAtlas'); 
+Conn = readmatrix([matdir filesep 'mouse_connectome_19_01.csv']);
+Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
+
+if ~isempty(ip.Results.init_path)
+    init_path = ip.Results.init_path;
+elseif isnan(mousedata_struct.(ip.Results.study).seed)
+    init_path = logical(mousedata_struct.(ip.Results.study).data(:,1));
+    init_path = DataToCCF(init_path,ip.Results.study,matdir);
 else
-    init_tau = ip.Results.init_rescale * baseline_pathology.(ip.Results.study);
+    init_path = logical(mousedata_struct.(ip.Results.study).seed);
+    init_path = DataToCCF(init_path,ip.Results.study,matdir);
 end
+init_tau = ip.Results.init_rescale * init_path;
 
-if logical(ip.Results.volcorrect)
-    load([matdir filesep 'regionvoxels.mat'],'voxels');
-    voxels_2hem = cat(1,voxels,voxels)/2; % approximation, splitting over the two hemispheres
-    Vcorr = mean(voxels_2hem) * diag(voxels_2hem.^(-1)); 
-    Conn = Vcorr * Conn; % correction proposed by Putra et al. 2021, adapted here
+switch ip.Results.connectome_subset
+    case 'Hippocampus'
+        Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
+        Conn = Conn([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
+        Vol = DefaultAtlas.volumes([27:37 27+213:37+213]);
+        init_tau = init_tau([27:37 27+213:37+213]);
+    case 'RH'
+        Adj = Adj(1:213,1:213);
+        Conn = Conn(1:213,1:213);
+        Vol = DefaultAtlas.volumes(1:213);
+        init_tau = init_tau(1:213);
+    case 'LH'
+        Adj = Adj(1:213,1:213);
+        Conn = Conn(214:end,214:end);
+        Vol = DefaultAtlas.volumes(214:end);
+        init_tau = init_tau(214:end);
 end
-
+nroi = size(Adj,1);
 i_nonzero_init_tau = init_tau > 0;
+% i_zero = ~i_nonzero_init_tau;
+
 t = 0:ip.Results.dt:ip.Results.T;
 nt = length(t);
-n = zeros(nroi,nt);
-m = zeros(nroi,nt);
-n(:,1) = init_tau(:);
-F_in_mat = zeros([nroi,size(n)]);
-F_out_mat = F_in_mat;
+N = zeros(nroi,nt); 
+N(:,1) = init_tau(:);
+netw_flux= zeros([nroi,size(N)]);
+W_1=zeros([nroi,size(N)]);
+W_2=zeros([nroi,size(N)]);
+S_ss=zeros([nroi,size(N)]);
+R_ss=zeros([nroi,size(N)]);
+N_adj_0 = N(:,1) .* Adj;
+fprintf('Calculating initial flux\n')
+netw_flux(:,:,1) = NetworkFluxCalculator(N_adj_0,N(:,1),matdir,...
+                                'beta',ip.Results.beta,...
+                                'gamma1',ip.Results.gamma1,...
+                                'gamma2',ip.Results.gamma2,...
+                                'delta',ip.Results.delta,...
+                                'lambda1',ip.Results.lambda1,...
+                                'lambda2',ip.Results.lambda2,...
+                                'frac',ip.Results.frac,...
+                                'L_int',ip.Results.L_int,...
+                                'L1',ip.Results.L1,...
+                                'L2',ip.Results.L2,...
+                                'L_ais',ip.Results.L_ais,...
+                                'L_syn',ip.Results.L_syn,...
+                                'resmesh',ip.Results.resmesh,...
+                                'reltol',ip.Results.reltol,...
+                                'abstol',ip.Results.abstol,...
+                                'fsolvetol',ip.Results.fsolvetol,... % compute the steady state network flux at time t0
+                                'connectome_subset',ip.Results.connectome_subset,...
+                                'time_scale',ip.Results.time_scale,...
+                                'len_scale',ip.Results.len_scale); 
 
 for h = 1:(nt-1)
     fprintf('Time step %d/%d\n',h,nt-1)
     tic
-    n_adj_in = n(:,h) .* Adj; %incoming edges for columns
-    F_in = NetworkFluxCalculator(n_adj_in, n(:,h), matdir,...
+    N_adj_in = N(:,h) .* Adj; %incoming edges for columns
+    fprintf('Calculating weights\n')
+    [W_1(:,:,h),W_2(:,:,h),R_ss(:,:,h),S_ss(:,:,h)] =...
+                                    MassBalanceCalculator(netw_flux(:,:,h),...
+                                    N_adj_in,N(:,h),matdir,...
                                     'beta',ip.Results.beta,...
                                     'gamma1',ip.Results.gamma1,...
                                     'gamma2',ip.Results.gamma2,...
@@ -107,21 +157,67 @@ for h = 1:(nt-1)
                                     'resmesh',ip.Results.resmesh,...
                                     'reltol',ip.Results.reltol,...
                                     'abstol',ip.Results.abstol,...
-                                    'fsolvetol',ip.Results.fsolvetol);
+                                    'fsolvetol',ip.Results.fsolvetol,...
+                                    'connectome_subset',ip.Results.connectome_subset,...
+                                    'time_scale',ip.Results.time_scale,...
+                                    'len_scale',ip.Results.len_scale); 
+    V_ss_1_h = S_ss(:,:,h);
+    V_ss_2_h = R_ss(:,:,h);
+    v_1 = diag(Conn*V_ss_1_h.'); % the contributions of the mass change's values in V_ss_1 on each node are by rows 
+    v_2 = diag(Conn.'*V_ss_2_h); % the contributions of the mass change's values in V_ss_2 on eanch node are by columns
+    F_in = 6*30*24*(60)^2 * netw_flux(:,:,h);
     F_out = F_in.';
-    Gamma_h = ip.Results.beta * m(:,h) * ip.Results.dt - ...
-        ip.Results.gamma1 * (n(:,h).*n(:,h) + n(:,h).*m(:,h)) * ip.Results.dt;
-    n(:,h+1) = n(:,h) + (diag((Conn.' * F_in)) - diag((Conn * F_out))) * ip.Results.dt...
-        + Gamma_h;
-    m(:,h+1) = m(:,h) - Gamma_h;
-    F_in_mat(:,:,h) = F_in;
-    F_out_mat(:,:,h) = F_out;
+    m_t= ip.Results.gamma1.*N(:,h).*(2*ip.Results.beta-ip.Results.gamma2.*...
+        N(:,h)./(ip.Results.beta-ip.Results.gamma2.*N(:,h)).^2); % 2.5e-5
+    N(:,h+1) = N(:,h)+(1./(Vol.*(1+m_t)+v_1+v_2)).*((diag((Conn.'*F_in)) - diag((Conn*F_out)))*ip.Results.dt); 
+    % ((diag((Conn.'*F_in)) - diag((Conn*F_out)))*k + beta*m(:,h)*k-gamma1*(n(:,h).*n(:,h))*k-gamma2*(n(:,h).*m(:,h))*k);
+    N_adj_h1 = N(:,h+1).*Adj;
+
+%     Gamma_h = ip.Results.beta * m(:,h) * ip.Results.dt - ...
+%         ip.Results.gamma1 * (n(:,h).*n(:,h) + n(:,h).*m(:,h)) * ip.Results.dt;
+%     n(:,h+1) = n(:,h) + (diag((Conn.' * F_in)) - diag((Conn * F_out))) * ip.Results.dt...
+%         + Gamma_h;
+%     m(:,h+1) = m(:,h) - Gamma_h;
+    fprintf('Calculating new flux\n')
+    netw_flux(:,:,h+1) = NetworkFluxCalculator(N_adj_h1,N(:,h+1),matdir,...
+                                    'beta',ip.Results.beta,...
+                                    'gamma1',ip.Results.gamma1,...
+                                    'gamma2',ip.Results.gamma2,...
+                                    'delta',ip.Results.delta,...
+                                    'lambda1',ip.Results.lambda1,...
+                                    'lambda2',ip.Results.lambda2,...
+                                    'frac',ip.Results.frac,...
+                                    'L_int',ip.Results.L_int,...
+                                    'L1',ip.Results.L1,...
+                                    'L2',ip.Results.L2,...
+                                    'L_ais',ip.Results.L_ais,...
+                                    'L_syn',ip.Results.L_syn,...
+                                    'resmesh',ip.Results.resmesh,...
+                                    'reltol',ip.Results.reltol,...
+                                    'abstol',ip.Results.abstol,...
+                                    'fsolvetol',ip.Results.fsolvetol,...
+                                    'connectome_subset',ip.Results.connectome_subset,...
+                                    'time_scale',ip.Results.time_scale,...
+                                    'len_scale',ip.Results.len_scale);
     toc
 end
+M = (ip.Results.gamma1 * N.^2)./(ip.Results.beta - ip.Results.gamma2 * N);
+
+% mass_cons_check = 0;
+% if mass_cons_check
+%     Mass_tot = sum(N,1)+sum(M,1);
+%     fprintf('Total Node Mass = %d\n',Mass_tot)
+% %     Mass_edge = NaN(length(Mass_tot),1);
+% %     for h=1:(nt-1)
+% %         Mass_edge(h) = sum(Mass_tot_edge(:,:,h),'all');
+% %     end
+% %     fprintf('Total Edge Mass = %d\n',Mass_edge)
+% end
 
 model_outputs = struct;
-model_outputs.Predicted.n = n;
-model_outputs.Predicted.m = m;
+model_outputs.Predicted.N = N;
+model_outputs.Predicted.M = M;
+model_outputs.Predicted.F = netw_flux;
 model_outputs.Parameters.beta = ip.Results.beta;
 model_outputs.Parameters.gamma1 = ip.Results.gamma1;
 model_outputs.Parameters.gamma2 = ip.Results.gamma2;
@@ -137,6 +233,9 @@ model_outputs.Sim.L_ais = ip.Results.L_ais;
 model_outputs.Sim.L_syn = ip.Results.L_syn;
 model_outputs.Sim.dt = ip.Results.dt;
 model_outputs.Sim.T = ip.Results.T;
+model_outputs.Sim.len_scale = ip.Results.len_scale;
+model_outputs.Sim.time_scale = ip.Results.time_scale;
+model_outputs.Sim.connectome_subset = ip.Results.connectome_subset;
 model_outputs.Sim.study = ip.Results.study;
 model_outputs.Sim.init_rescale = ip.Results.init_rescale;
 model_outputs.Sim.init_path = init_tau;
@@ -148,24 +247,27 @@ model_outputs.Sim.fsolve_tol = ip.Results.fsolvetol;
 if ip.Results.plotting
     figure
     subplot(2,1,1)
-    plot(t,n);
+    plot(t,N);
     xlabel('t');
-    ylabel('n(t)');
-    title("n,m distributions on the network",'Fontsize',12);
-    txt = ['$\mathbf{\lambda_1} = $' num2str(lambda1_) ',' '$\mathbf{\lambda_2} = $'...
-     num2str(lambda2_) ',' , '$\mathbf{\epsilon}=$' num2str(epsilon_) ',',...
-     '$\mathbf{\delta}=$' num2str(delta_) ];
+    ylabel('N(t)');
+    title("N,M distributions on the network",'Fontsize',12);
+    txt = ['$\mathbf{\lambda_1} = $' num2str(ip.Results.lambda1) ','...
+        '$\mathbf{\lambda_2} = $' num2str(ip.Results.lambda2) ',' , ......
+        '$\mathbf{\beta} = $' num2str(ip.Results.beta) ',' , ...
+        '$\mathbf{\gamma1}=$' num2str(ip.Results.gamma1) ',',...
+        '$\mathbf{\epsilon}=$' num2str(ip.Results.epsilon) ',',...
+        '$\mathbf{\delta}=$' num2str(ip.Results.delta)];
     subtitle(txt,'Interpreter','latex');
     subplot(2,1,2)
-    plot(t,m);
+    plot(t,M);
     xlabel('t');
-    ylabel('m(t)');
+    ylabel('M(t)');
 
     figure
     subplot(2,1,1)
-    plot(t,n(i_nonzero_init_tau,:));
+    plot(t,N(i_nonzero_init_tau,:));
     subplot(2,1,2)
-    plot(t,m(i_nonzero_init_tau,:));
+    plot(t,M(i_nonzero_init_tau,:));
 end
 
 end
