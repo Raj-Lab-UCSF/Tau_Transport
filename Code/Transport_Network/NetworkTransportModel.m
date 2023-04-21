@@ -34,7 +34,6 @@ len_scale_ = 1e-3;
 ip = inputParser;
 % validChar = @(x) ischar(x);
 validScalar = @(x) isnumeric(x) && isscalar(x) && (x>=0);
-validNonnegative = @(x) isnumeric(x) && (sum(x>=0) == length(x));
 validLogical = @(x) validScalar(x) && (x == 0 || x == 1);
 addParameter(ip, 'beta', beta_, validScalar);
 addParameter(ip, 'gamma1', gamma1_, validScalar);
@@ -61,17 +60,31 @@ addParameter(ip, 'study', study_);
 addParameter(ip, 'init_rescale', init_rescale_, validScalar);
 addParameter(ip, 'dt', dt_, validScalar);
 addParameter(ip, 'T', T_, validScalar);
-addParameter(ip, 'init_path', init_path_, validNonnegative);
+addParameter(ip, 'init_path', init_path_);
 addParameter(ip, 'plotting', plotting_, validLogical);
 parse(ip, varargin{:});
 
 load([matdir filesep 'Mouse_Tauopathy_Data_HigherQ.mat'],'mousedata_struct'); 
 load([matdir filesep 'DefaultAtlas.mat'],'DefaultAtlas'); 
+load([matdir filesep 'CCF_labels.mat'],'CCF_labels');
 Conn = readmatrix([matdir filesep 'mouse_connectome_19_01.csv']);
 Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
 
 if ~isempty(ip.Results.init_path)
-    init_path = ip.Results.init_path;
+    init_path = zeros(size(Conn,1),1);
+    for i = 1:length(ip.Results.init_path)
+        reghemstr = ip.Results.init_path{i};
+        reghemcell = split(reghemstr,'_');
+        reglog = ismember(CCF_labels(:,1),reghemcell{1});
+        if strcmp(reghemcell{2},'L')
+            hemlog = ismember(CCF_labels(:,4),'Left Hemisphere'); 
+        elseif strcmp(reghemcell{2},'R')
+            hemlog = ismember(CCF_labels(:,4),'Right Hemisphere'); 
+        else 
+            hemlog = ones(size(Conn,1),1);
+        end
+        init_path((reglog + hemlog) == 2) = 1;
+    end
 elseif isnan(mousedata_struct.(ip.Results.study).seed)
     init_path = logical(mousedata_struct.(ip.Results.study).data(:,1));
     init_path = DataToCCF(init_path,ip.Results.study,matdir);
@@ -83,21 +96,18 @@ init_tau = ip.Results.init_rescale * init_path;
 
 switch ip.Results.connectome_subset
     case 'Hippocampus'
-        Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
-        Conn = Conn([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
-        Vol = DefaultAtlas.volumes([27:37 27+213:37+213]);
-        init_tau = init_tau([27:37 27+213:37+213]);
+        inds = ismember(CCF_labels(:,3),'Hippocampus');
     case 'RH'
-        Adj = Adj(1:213,1:213);
-        Conn = Conn(1:213,1:213);
-        Vol = DefaultAtlas.volumes(1:213);
-        init_tau = init_tau(1:213);
+        inds = ismember(CCF_labels(:,4),'Right Hemisphere');
     case 'LH'
-        Adj = Adj(1:213,1:213);
-        Conn = Conn(214:end,214:end);
-        Vol = DefaultAtlas.volumes(214:end);
-        init_tau = init_tau(214:end);
+        inds = ismember(CCF_labels(:,4),'Left Hemisphere');
+    otherwise
+        inds = logical(ones(size(Conn,1),1)); %#ok<LOGL> 
 end
+Adj = Adj(inds,inds);
+Conn = Conn(inds,inds);
+Vol = DefaultAtlas.volumes(inds);
+init_tau = init_tau(inds);
 nroi = size(Adj,1);
 i_nonzero_init_tau = init_tau > 0;
 % i_zero = ~i_nonzero_init_tau;
@@ -136,7 +146,6 @@ netw_flux(:,:,1) = NetworkFluxCalculator(N_adj_0,N(:,1),matdir,...
 
 for h = 1:(nt-1)
     fprintf('Time step %d/%d\n',h,nt-1)
-    tic
     N_adj_in = N(:,h) .* Adj; %incoming edges for columns
     fprintf('Calculating weights\n')
     [W_1(:,:,h),W_2(:,:,h),R_ss(:,:,h),S_ss(:,:,h)] =...
@@ -165,7 +174,7 @@ for h = 1:(nt-1)
     V_ss_2_h = R_ss(:,:,h);
     v_1 = diag(Conn*V_ss_1_h.'); % the contributions of the mass change's values in V_ss_1 on each node are by rows 
     v_2 = diag(Conn.'*V_ss_2_h); % the contributions of the mass change's values in V_ss_2 on eanch node are by columns
-    F_in = 6*30*24*(60)^2 * netw_flux(:,:,h);
+    F_in = 6*30*24*(60)^2 * netw_flux(:,:,h); % convert from seconds to 180 days
     F_out = F_in.';
     m_t= ip.Results.gamma1.*N(:,h).*(2*ip.Results.beta-ip.Results.gamma2.*...
         N(:,h)./(ip.Results.beta-ip.Results.gamma2.*N(:,h)).^2); % 2.5e-5
@@ -199,7 +208,6 @@ for h = 1:(nt-1)
                                     'connectome_subset',ip.Results.connectome_subset,...
                                     'time_scale',ip.Results.time_scale,...
                                     'len_scale',ip.Results.len_scale);
-    toc
 end
 M = (ip.Results.gamma1 * N.^2)./(ip.Results.beta - ip.Results.gamma2 * N);
 

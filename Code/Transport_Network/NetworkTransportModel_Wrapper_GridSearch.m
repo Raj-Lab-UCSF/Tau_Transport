@@ -5,11 +5,11 @@
 clear; clc;
 curpath = cd;
 simpath = [curpath filesep 'SampleFiles'];
-loadpath = [curpath filesep 'SampleFiles'];
+loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'test2'; % for saving the outputs
+simstr = 'test_ECl_seed'; % for saving the outputs
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
@@ -20,10 +20,10 @@ paramnames = {'beta','gamma1','gamma2','frac','lambda1','lambda2',...
 inputparams(1,:) = paramnames;
 inputparams{2,1} = 1e-6; % beta
 inputparams{2,2} = 2e-5; % gamma1
-inputparams{2,3} = [2e-6,4e-6,6e-6]; % gamma2
+inputparams{2,3} = 0; % gamma2
 inputparams{2,4} = 0.92; % frac
-inputparams{2,5} = [0.01,1]; % lambda1
-inputparams{2,6} = [0.01,1]; % lambda2
+inputparams{2,5} = [0.01,0.001]; % lambda1
+inputparams{2,6} = [0.01,0.001]; % lambda2
 inputparams{2,7} = 1; % delta
 inputparams{2,8} = 0.01; % epsilon
 
@@ -44,14 +44,16 @@ L1 = 200; % default = 200
 L2 = 200; % default = 200
 L_ais = 40; % default = 40
 L_syn = 40; % default = 40
-T = 0.01; % default = 0.05
-dt = 0.005; % default = 0.005
+T = 0.1; % default = 0.05
+dt = 0.01; % default = 0.005
 resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 plotting = 0;
 reltol = 1e-4;
 abstol = 1e-4;
 fsolvetol = 1e-6;
-volcorrect = 1;
+init_path = {'Entorhinal area, lateral part_L', 'Entorhinal area, lateral part_R'};
+study = 'Hurtado';
+connectome_subset = 'Hippocampus';
 ncores = 4;
 
 %% 3. Run NetworkTransportModel
@@ -86,7 +88,9 @@ parfor i = 1:size(paramgrid,1)
                                 'reltol',reltol,...
                                 'abstol',abstol,...
                                 'fsolvetol',fsolvetol,...
-                                'volcorrect',volcorrect);
+                                'init_path',init_path,...
+                                'study',study,...
+                                'connectome_subset',connectome_subset);
     sim_struct(i).Model_Outputs = mdloutput;
 end
 output_struct.Simulations = sim_struct;
@@ -94,5 +98,5 @@ delete(gcp('nocreate'));
 toc
 
 %% 4. Save output file
-save([simpath filesep simstr '.mat'],'output_struct') 
+save([simpath filesep simstr '.mat'],'sim_struct') 
 clear

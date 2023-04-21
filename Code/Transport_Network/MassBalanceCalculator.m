@@ -174,8 +174,6 @@ options = optimset('TolFun',1e-06,'Display','off');
 W_1_0 = fsolve(q_flux_0_0,g_0_0,options);
 
 for j = 1:nroi
-    tic
-    fprintf('ROI %d/%d\n',j,nroi)
     Ad_in = logical(Adj(:,j));
     C_1 = tau_xL(j);
     C_1 = repmat(C_1,1,length(Ad_in));
@@ -202,7 +200,6 @@ for j = 1:nroi
         W_1_flux(i_app,j) = fsolve(q_flux_1,g0_1,options);
         W_2_flux(i_app,j) = fsolve(q_flux_2,g0_2,options);
     end
-    toc
 end
 network_flux_vec = network_flux(:);
 tau_x0_vec = tau_x0(:);
