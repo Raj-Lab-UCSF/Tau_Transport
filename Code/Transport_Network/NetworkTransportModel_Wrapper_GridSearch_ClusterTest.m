@@ -3,7 +3,7 @@
 
 %% 1. Define directories for saving outputs
 clear; clc;
-curpath = cd;
+curpath = '/home/jtorok/Tau_Transport';
 p = genpath(curpath);
 addpath(p);
 simpath = [curpath filesep 'SampleFiles'];
@@ -11,7 +11,7 @@ loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'test_ECl_seed'; % for saving the outputs
+simstr = 'test_ECl_seed_2'; % for saving the outputs
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
@@ -20,8 +20,8 @@ inputparams = cell(2,8);
 paramnames = {'beta','gamma1','gamma2','frac','lambda1','lambda2',...
     'delta','epsilon'};
 inputparams(1,:) = paramnames;
-inputparams{2,1} = 1e-6; % beta
-inputparams{2,2} = [2e-4 6e-5 2e-5]; % gamma1
+inputparams{2,1} = 1e-4; % beta
+inputparams{2,2} = [2e-2 6e-3 2e-3]; % gamma1
 inputparams{2,3} = 0; % gamma2
 inputparams{2,4} = 0.92; % frac
 inputparams{2,5} = 0.001; % lambda1
@@ -46,8 +46,8 @@ L1 = 200; % default = 200
 L2 = 200; % default = 200
 L_ais = 40; % default = 40
 L_syn = 40; % default = 40
-T = 0.1; % default = 0.05
-dt = 0.01; % default = 0.005
+T = 0.2; % default = 0.1
+dt = 0.01; % default = 0.01
 resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 plotting = 0;
 reltol = 1e-4;
