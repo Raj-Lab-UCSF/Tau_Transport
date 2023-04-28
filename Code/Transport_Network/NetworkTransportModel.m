@@ -210,7 +210,6 @@ for h = 1:(nt-1)
                                     'len_scale',ip.Results.len_scale);
 end
 M = (ip.Results.gamma1 * N.^2)./(ip.Results.beta - ip.Results.gamma2 * N);
-
 % mass_cons_check = 0;
 % if mass_cons_check
 %     Mass_tot = sum(N,1)+sum(M,1);
@@ -271,11 +270,11 @@ if ip.Results.plotting
     xlabel('t');
     ylabel('M(t)');
 
-    figure
-    subplot(2,1,1)
-    plot(t,N(i_nonzero_init_tau,:));
-    subplot(2,1,2)
-    plot(t,M(i_nonzero_init_tau,:));
+%     figure
+%     subplot(2,1,1)
+%     plot(t,N(i_nonzero_init_tau,:));
+%     subplot(2,1,2)
+%     plot(t,M(i_nonzero_init_tau,:));
 end
 
 end

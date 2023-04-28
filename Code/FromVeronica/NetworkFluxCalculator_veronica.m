@@ -4,10 +4,10 @@ function network_flux = NetworkFluxCalculator_veronica(tau_x0,tau_xL,varargin)
 %     matdir = [cd filesep 'FromVeronica'];
 % end
 len_scale=1e-3; %scale factor from um to um to mm
-time_scale= 1;%30*24*(60)^2;% scale factor from s to day
-beta_ = 1e-06*time_scale;
-gamma1_ = 2e-05*time_scale;
-%gamma2_ = 2e-05;
+
+beta_ = 1e-06;
+gamma1_ = 2e-05;
+gamma2_ = 0;
 delta_ = 1;
 epsilon_ = 0.01;
 lambda1_ = 0.01;%0.02  0.01 
@@ -27,7 +27,7 @@ ip = inputParser;
 validScalar = @(x) isnumeric(x) && isscalar(x) && (x>=0);
 addParameter(ip, 'beta', beta_, validScalar);
 addParameter(ip, 'gamma1', gamma1_, validScalar);
-%addParameter(ip, 'gamma2', gamma2_, validScalar);
+addParameter(ip, 'gamma2', gamma2_, validScalar);
 addParameter(ip, 'delta', delta_, validScalar);
 addParameter(ip, 'epsilon', epsilon_, validScalar);
 addParameter(ip, 'frac', frac_, validScalar);
@@ -46,9 +46,9 @@ parse(ip, varargin{:});
 
 % % % 2. Definition of constants
 
-v_a = 0.7*len_scale*time_scale; % Average velocity (um/s) of anterograde active transpot (Konsack 2007)
-v_r = 0.7*len_scale*time_scale; % Average velocity (um/s) of retrograde active transport (Konsack 2007)
-diff_n = 12*len_scale^2*time_scale; % Diffusivity (um^2/s) of n (Konsack 2007)
+v_a = 0.7*len_scale; % Average velocity (mm/s) of anterograde active transpot (Konsack 2007)
+v_r = 0.7*len_scale; % Average velocity (mm/s) of retrograde active transport (Konsack 2007)
+diff_n = 12*len_scale^2; % Diffusivity (mm^2/s) of n (Konsack 2007)
 
 
 % % % 3. Definition of the (inhomogeneous) xmesh
@@ -84,6 +84,10 @@ xmesh = [xmesh1, xmesh_int, xmesh2];
 % % % 5a. Presynaptic somatodendritic compartment
 presyn_mask = spatial_mask('presyn');
 xmesh_presyn = len_scale.*xmesh(presyn_mask);
+n0=@(B) B;
+options = odeset('RelTol',ip.Results.reltol,'AbsTol',ip.Results.abstol,'NonNegative',1:length(n0));
+n_ss_presyn = @(A,B) ode45(@(x,n)ode_ss_n(x,A,n,diff_n),len_scale.*[0,ip.Results.L1],n0(B),options);
+n_ss_presyn = @(A,B,x) deval(n_ss_presyn(A,B),x);
 %n_ss_presyn = @(A,B,x) max((B - A.*x/diff_n),0); 
 %m_ss_presyn = @(A,B,x) ((ip.Results.gamma*n_ss_presyn(A,B,x).^2)./(ip.Results.beta - n_ss_presyn(A,B,x)*ip.Results.gamma));
 %m_ss_presyn = @(A,x) ((ip.Results.gamma*n_ss_presyn(A,x).^2)./(ip.Results.beta));
@@ -92,6 +96,8 @@ xmesh_presyn = len_scale.*xmesh(presyn_mask);
 ais_mask = spatial_mask('ais');
 xmesh_ais= len_scale.*xmesh(ais_mask);
 x1 = xmesh_presyn(end);
+n_ss_ais = @(A,B) ode45(@(x,n)ode_ss_n(x,A,n,diff_n*ip.Results.lambda1),len_scale.*[ip.Results.L1,ip.Results.L1+ip.Results.L_ais],n_ss_presyn(A,B,x1),options);
+n_ss_ais = @(A,B,x) deval(n_ss_ais(A,B),x);
 %n_ss_ais = @(A,B,x) max((B - A.*x1/diff_n - A.*(x-x1)/(diff_n*ip.Results.lambda1)),0);
 %n_ss_ais=@(A,B,x)max((n_ss_presyn(A,B,x1)-A*(x-x1)/(diff_n*ip.Results.lambda1)),0);
 %m_ss_ais = @(A,B,x) (ip.Results.gamma*n_ss_ais(A,B,x).^2)./(ip.Results.beta - n_ss_ais(A,B,x)*ip.Results.gamma);
@@ -101,11 +107,12 @@ x1 = xmesh_presyn(end);
 axon_mask = spatial_mask('axon');
 xmesh_axon= len_scale.*xmesh(axon_mask);
 x2 = xmesh_ais(end);
-nx_init = @(A_,B) max((-A_.*x1/diff_n + B - A_.*(x2 - x1)/(ip.Results.lambda1*diff_n)),0);
+%nx_init = @(A_,B)n_ss_ais(A_,B,x2) ;    %max((-A_.*x1/diff_n + B - A_.*(x2 - x1)/(ip.Results.lambda1*diff_n)),0);
+
 %nx_init=@(A_,B)  n_ss_ais(A_,B,x2);
-options = odeset('RelTol',ip.Results.reltol,'AbsTol',ip.Results.abstol,'NonNegative',1:length(nx_init));
+%options = odeset('RelTol',ip.Results.reltol,'AbsTol',ip.Results.abstol,'NonNegative',1:length(nx_init));
 n_ss_axon = @(A,B) ode45(@(x,n)ode_ss_axon(x,A,n),len_scale.*[ip.Results.L1+ip.Results.L_ais,...
-   ip.Results.L1+ip.Results.L_int-ip.Results.L_syn],nx_init(A,B),options);
+   ip.Results.L1+ip.Results.L_int-ip.Results.L_syn],n_ss_ais(A,B,x2),options);
 n_ss_axon = @(A,B,x) deval(n_ss_axon(A,B),x);
 %       m_ss_axon = @(A,B,x) (ip.Results.gamma*n_ss_axon(A,B,x).^2)./ ...
 %                   (ip.Results.beta - ip.Results.gamma*n_ss_axon(A,B,x));
@@ -116,22 +123,26 @@ n_ss_axon = @(A,B,x) deval(n_ss_axon(A,B),x);
 syncleft_mask = spatial_mask('syncleft');
 xmesh_syncleft = len_scale.*xmesh(syncleft_mask);
 x3 = xmesh_axon(end);
-n_ss_syncleft = @(A,B,x) max((n_ss_axon(A,B,x3) - A.*(x-x3)/(diff_n*ip.Results.lambda2)),0);
+n_ss_syncleft = @(A,B) ode45(@(x,n)ode_ss_n(x,A,n,(diff_n*ip.Results.lambda2)),len_scale.*[ ip.Results.L1+ip.Results.L_int-ip.Results.L_syn, ip.Results.L1+ip.Results.L_int],n_ss_axon(A,B,x3),options);
+n_ss_syncleft = @(A,B,x) deval(n_ss_syncleft(A,B),x);
+%n_ss_syncleft = @(A,B,x) max((n_ss_axon(A,B,x3) - A.*(x-x3)/(diff_n*ip.Results.lambda2)),0);
 %m_ss_syncleft = M1_0_*ones(1,length(xmesh_syncleft));
 
 % % % 5e. Postsynaptic somatodendritic compartment
 postsyn_mask = spatial_mask('postsyn');
 xmesh_postsyn = len_scale.*xmesh(postsyn_mask);
 x4 = xmesh_syncleft(end);
-%       n_ss_postsyn = @(A,B,x) max((n_ss_syncleft(A,B,x4) - A.*x/diff_n),0); 
+% n_ss_postsyn = @(A,B) ode45(@(x,n)ode_ss_n(x,A,n,diff_n),len_scale.*[ip.Results.L1+ip.Results.L_int,L_total],n_ss_syncleft(A,B,x4),options);
+% n_ss_postsyn = @(A,B,x) deval(n_ss_postsyn(A,B),x);
+n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*x/diff_n); 
 % m_ss_postsyn = @(A,B,x) (ip.Results.gamma*n_ss_postsyn(A,B,x).^2)./ ...
        % (ip.Results.beta - ip.Results.gamma*n_ss_postsyn(A,B,x));
 % m_ss_postsyn = @(A,x) (ip.Results.gamma*n_ss_postsyn(A,x).^2)./ ...
 %          (ip.Results.beta);
 x5 = xmesh_postsyn(end);
 %f_ss=@(A)(n_ss_axon(A,x3)- (A/(diff_n*ip.Results.lambda2))*((1-ip.Results.lambda2)*x4+ip.Results.lambda2*x5-x3)-C_1);
-% f_ss=@(A,B,C)(n_ss_postsyn(A,B,x5)-C);
-f_ss = @(A,B,C)(n_ss_syncleft(A,B,x4) - A .* x5/diff_n-C);
+ f_ss=@(A,B,C)(n_ss_postsyn(A,B,x5)-C);
+%f_ss = @(A,B,C)(n_ss_syncleft(A,B,x4) - A .* x5/diff_n-C);
 
 % % % 6. Flux calculation on network 
 %Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
@@ -156,9 +167,16 @@ for i = 1:nroi
 end
 
 % Functions
-function nprime=ode_ss_axon(x,A,n) %#ok<INUSD> 
- 
-nprime=-A/(ip.Results.frac*diff_n)+(1/diff_n)*((1-ip.Results.frac)./ip.Results.frac).*n.*((v_a*(1+ip.Results.delta.*n).*(1-((ip.Results.gamma1*ip.Results.epsilon.*n.^2)./ip.Results.beta))-v_r));
+    function nprime=ode_ss_n(x,A,n,D)
+        nprime=1/D*-A;
+ end
+%  function nprime=ode_ss_ais_sc(x,A)
+%         nprime=-A*1/(ip.Results.lambda1*diff_n);
+%  end
+
+function nprime=ode_ss_axon(x,A,n) 
+ nprime=1/diff_n*-A/ip.Results.frac+1/diff_n*((1-ip.Results.frac)./ip.Results.frac).*n.*((v_a*(1+ip.Results.delta.*n).*(1-((ip.Results.gamma1*ip.Results.epsilon.*n.^2)./(ip.Results.beta-ip.Results.gamma2.*n)))-v_r)); 
+%nprime=-A/(ip.Results.frac*diff_n)+(1/diff_n)*((1-ip.Results.frac)./ip.Results.frac).*n.*((v_a*(1+ip.Results.delta.*n).*(1-((ip.Results.gamma1*ip.Results.epsilon.*n.^2)./ip.Results.beta))-v_r));
  end
 
 

@@ -50,7 +50,8 @@ addParameter(ip, 'len_scale', len_scale_, validScalar);
 addParameter(ip, 'time_scale', time_scale_, validScalar);
 parse(ip, varargin{:});
 beta_new = ip.Results.beta*ip.Results.time_scale;
-gamma_new = ip.Results.gamma1*ip.Results.time_scale;
+gamma1_new = ip.Results.gamma1*ip.Results.time_scale;
+gamma2_new = ip.Results.gamma2*ip.Results.time_scale;
 L1_new = ip.Results.L1 * ip.Results.len_scale;
 L2_new = ip.Results.L2 * ip.Results.len_scale;
 L_int_new = ip.Results.L_int * ip.Results.len_scale;
@@ -100,34 +101,48 @@ xmesh = [xmesh1, xmesh_int, xmesh2];
 % % % 4a. Presynaptic somatodendritic compartment
 presyn_mask = spatial_mask('presyn');
 xmesh_presyn = xmesh(presyn_mask);
+n0 = @(B) B;
+options = odeset('RelTol',ip.Results.reltol,'AbsTol',ip.Results.abstol,'NonNegative',1:length(n0));
+n_ss_presyn = @(A,B) ode45(@(x,n)ode_ss_n(x,A,n,diff_n),[0,L1_new],n0(B),options);
+n_ss_presyn = @(A,B,x) deval(n_ss_presyn(A,B),x);
 x1 = xmesh_presyn(end);
 
 % % % 4b. Axon initial segment
 ais_mask = spatial_mask('ais');
 xmesh_ais = xmesh(ais_mask);
+n_ss_ais = @(A,B) ode45(@(x,n)ode_ss_n(x,A,n,diff_n*ip.Results.lambda1),[L1_new,L1_new+L_ais_new],n_ss_presyn(A,B,x1),options);
+n_ss_ais = @(A,B,x) deval(n_ss_ais(A,B),x);
 x2 = xmesh_ais(end);
 
 % % % 4c. Axon
 axon_mask = spatial_mask('axon');
 xmesh_axon = xmesh(axon_mask);
 x3 = xmesh_axon(end);
-nx_init = @(A_,B) max((-A_.*x1/diff_n + B - A_.*(x2 - x1)/(ip.Results.lambda1*diff_n)),0);
-options = odeset('RelTol',ip.Results.reltol,'AbsTol',ip.Results.abstol,'NonNegative',1:length(nx_init));
 n_ss_axon = @(A,B) ode45(@(x,n)ode_ss_axon(x,A,n),[L1_new+L_ais_new,...
-   L1_new+L_int_new-L_syn_new],nx_init(A,B),options);
+   L1_new+L_int_new-L_syn_new],n_ss_ais(A,B,x2),options);
 n_ss_axon = @(A,B,x) deval(n_ss_axon(A,B),x);
+% nx_init = @(A_,B) max((-A_.*x1/diff_n + B - A_.*(x2 - x1)/(ip.Results.lambda1*diff_n)),0);
+% options = odeset('RelTol',ip.Results.reltol,'AbsTol',ip.Results.abstol,'NonNegative',1:length(nx_init));
+% n_ss_axon = @(A,B) ode45(@(x,n)ode_ss_axon(x,A,n),[L1_new+L_ais_new,...
+%    L1_new+L_int_new-L_syn_new],nx_init(A,B),options);
+% n_ss_axon = @(A,B,x) deval(n_ss_axon(A,B),x);
 
 % % % 4d. Synaptic cleft
 syncleft_mask = spatial_mask('syncleft');
 xmesh_syncleft = xmesh(syncleft_mask);
 x4 = xmesh_syncleft(end);
-n_ss_syncleft = @(A,B,x) max((n_ss_axon(A,B,x3) - A.*(x-x3)/(diff_n*ip.Results.lambda2)),0);
+% n_ss_syncleft = @(A,B,x) max((n_ss_axon(A,B,x3) - A.*(x-x3)/(diff_n*ip.Results.lambda2)),0);
+n_ss_syncleft = @(A,B) ode45(@(x,n)ode_ss_n(x,A,n,(diff_n*ip.Results.lambda2)),...
+    [L1_new+L_int_new-L_syn_new,L1_new+L_int_new],n_ss_axon(A,B,x3),options);
+n_ss_syncleft = @(A,B,x) deval(n_ss_syncleft(A,B),x);
 
 % % % 4e. Postsynaptic somatodendritic compartment
 postsyn_mask = spatial_mask('postsyn');
 xmesh_postsyn = xmesh(postsyn_mask);
 x5 = xmesh_postsyn(end);
-f_ss = @(A,B,C)(n_ss_syncleft(A,B,x4) - A .* x5/diff_n-C);
+% f_ss = @(A,B,C)(n_ss_syncleft(A,B,x4) - A .* x5/diff_n-C);
+n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*x/diff_n); 
+f_ss=@(A,B,C)(n_ss_postsyn(A,B,x5)-C);
 
 % % % 5. Flux calculation on network 
 Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
@@ -158,10 +173,17 @@ for i = 1:nroi
 end
 
 % % % 6. Functions
+    function nprime=ode_ss_n(x,A,n,D) %#ok<INUSD> 
+        nprime=1/D*-A;
+    end
+
     function nprime=ode_ss_axon(x,A,n) %#ok<INUSD> 
-        nprime = -A/(ip.Results.frac*diff_n)+(1/diff_n)*((1-ip.Results.frac)./...
-        ip.Results.frac).*n.*((v_a*(1+ip.Results.delta.*n).*(1-((gamma_new...
-        *ip.Results.epsilon.*n.^2)./beta_new))-v_r));
+%         nprime = -A/(ip.Results.frac*diff_n)+(1/diff_n)*((1-ip.Results.frac)./...
+%         ip.Results.frac).*n.*((v_a*(1+ip.Results.delta.*n).*(1-((gamma_new...
+%         *ip.Results.epsilon.*n.^2)./beta_new))-v_r));
+        nprime=1/diff_n*-A/ip.Results.frac+1/diff_n*((1-ip.Results.frac)./...
+            ip.Results.frac).*n.*((v_a*(1+ip.Results.delta.*n).*(1-((gamma1_new...
+            *ip.Results.epsilon.*n.^2)./(beta_new-gamma2_new.*n)))-v_r)); 
     end
 
     function [maskvals] = spatial_mask(compartment)
