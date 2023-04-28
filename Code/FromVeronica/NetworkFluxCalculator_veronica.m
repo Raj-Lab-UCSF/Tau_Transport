@@ -76,8 +76,6 @@ elseif strcmp(ip.Results.resmesh, 'coarse')
 end
 xmesh = [xmesh1, xmesh_int, xmesh2];
 
-
-
 % % % 5. Steady State Calculation
 % Follows the derivation of Michiel Bertsh
 

@@ -59,7 +59,6 @@ L_ais_new = ip.Results.L_ais * ip.Results.len_scale;
 L_syn_new = ip.Results.L_syn * ip.Results.len_scale;
 
 % % % 2. Definition of static constants
-
 v_a = 0.7*ip.Results.len_scale * ip.Results.time_scale; % Average velocity (um/s) of anterograde active transpot (Konsack 2007)
 v_r = 0.7*ip.Results.len_scale * ip.Results.time_scale; % Average velocity (um/s) of retrograde active transport (Konsack 2007)
 diff_n = 12*ip.Results.len_scale^2 * ip.Results.time_scale; % Diffusivity (um^2/s) of n (Konsack 2007)
