@@ -176,7 +176,7 @@ n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*x/diff_n);
 % q_ss_postsyn = @(W,A,B,V0,x) max((q_ss_syncleft(W,A,B,V0,x4) - W.*x/diff_n),0);
 % f_q_ss = @(W,A,B,V0,V_L)((q_ss_syncleft(W,A,B,V0,x4)- W.*x5/diff_n -V_L));  
 q_ss_postsyn =@(W,A,B,V0,x) (q_ss_syncleft(W,A,B,V0,x4) - W.*x/diff_n);
-f_q_ss=@(W,A,B,V0,V_L)(q_ss_postsyn(W,A,B,V0,x5)-V_L) ; 
+f_q_ss=@(W,A,B,V0,V_L)(q_ss_postsyn(W,A,B,V0,x5)-V_L); 
 
 % % % 5. Perform shooting problem 
 Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);

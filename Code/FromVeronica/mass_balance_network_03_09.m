@@ -11,7 +11,7 @@ beta_ = 1e-04;
 gamma1_ =2e-03;
 gamma2_=0;
 delta_ =1;
-epsilon_ =  0.01;
+epsilon_ =  1;
 lambda1_ = 0.01;
 lambda2_ = 0.01;
 frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
@@ -72,7 +72,6 @@ elseif strcmp(ip.Results.resmesh, 'coarse')
         (ip.Results.L1+ip.Results.L_int-(ip.Results.L_syn-2)):2:(ip.Results.L1+ip.Results.L_int)];
 end
 xmesh = [xmesh1, xmesh_int, xmesh2];
-
 %Network stuff
 Adj=readmatrix('mouse_adj_matrix_19_01.csv');
 %Adj=Adj(1:213,1:213);
@@ -147,7 +146,7 @@ n_ss_syncleft = @(A,B,x) deval(n_ss_syncleft(A,B),x);
               %  (ip.Results.beta );
        
     
-x5=xmesh_postsyn(end)
+x5=xmesh_postsyn(end);
 % %% a.Linearized  equation for v=dn/db or dn/dC in presynaptic Somatodendritic Compartment
  q_in=@(V0) V0;
  options_q = odeset('RelTol',1e-6,'AbsTol',1e-6,'NonNegative',1:length(q_in));
@@ -246,8 +245,8 @@ q_flux_2=@(W)f_q_ss(W,A_1,B_1,V0_1_2,V_L_1_2);
  g0_2=zeros(length(V0_1_1),1);
 % v_flux_1=@(W)f_v_ss(W,A_1,B_1,V0_1_1,V_L_1_1);
 % v_flux_2=@(W)f_v_ss(W,A_1,B_1,V0_1_2,V_L_1_2);
-options=optimset('TolFun',1e-06);
-W_1_flux(i_app,j)=fsolve(q_flux_1,g0_1,options)
+options = optimset('TolFun',1e-06,'Display','off');
+W_1_flux(i_app,j)=fsolve(q_flux_1,g0_1,options);
 W_2_flux(i_app,j)=fsolve(q_flux_2,g0_2,options);
 
 %         W_1_flux(i_app,j)=W_1(1:length(B_1));

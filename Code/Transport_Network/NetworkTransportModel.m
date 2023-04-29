@@ -8,14 +8,14 @@ beta_ = 1e-04;
 gamma1_ = 2e-03;
 gamma2_ = 0;
 delta_ = 1;
-epsilon_ = 1;
+epsilon_ = 0.01;
 lambda1_ = 0.01;
 lambda2_ = 0.01;
 study_ = 'Hurtado';
 init_path_ = [];
 init_rescale_ = 1e-2;
 dt_ = 0.01;
-T_ = 0.03;
+T_ = 0.1;
 frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
 L_int_ = 1000; % in micrometers
 L1_ = 200;
@@ -172,7 +172,7 @@ for h = 1:(nt-1)
                                     'connectome_subset',ip.Results.connectome_subset,...
                                     'time_scale',ip.Results.time_scale,...
                                     'len_scale',ip.Results.len_scale); 
-    V_ss_1_h = S_ss(:,:,h)
+    V_ss_1_h = S_ss(:,:,h);
     V_ss_2_h = R_ss(:,:,h);
     v_1 = diag(Conn*V_ss_1_h.'); % the contributions of the mass change's values in V_ss_1 on each node are by rows 
     v_2 = diag(Conn.'*V_ss_2_h); % the contributions of the mass change's values in V_ss_2 on eanch node are by columns

@@ -32,7 +32,7 @@ lambda1_ = 0.01;
 lambda2_ = 0.01;%0.01;
 init_rescale_ = 1e-2;
 dt_ = 0.01;  %0.5e5;%24*(60)^2;
-T_ = 0.01; %5*dt_;
+T_ = 0.05; %5*dt_;
 frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
 L_int_ = 1000; % in micrometers
 L1_ = 200;
@@ -133,7 +133,7 @@ for h=1:(nt-1)
     fprintf('Calculating weights\n')
  [W_1(:,:,h),W_2(:,:,h),R_ss(:,:,h),S_ss(:,:,h)]=mass_balance_network_03_09(netw_flux(:,:,h),N_adj_in,N(:,h));
  
- V_ss_1_h=S_ss(:,:,h)
+ V_ss_1_h=S_ss(:,:,h);
  V_ss_2_h=R_ss(:,:,h);
  %v_1=diag(V_ss_1_h*(Conn.')); %the contributions of the mass change's values in S_ss on each node are by rows weighted by the Conn matrix
  %v_2= diag(Conn.'*V_ss_2_h);%the contributions of the mass change's values in R_ss on eanch node are by columns
