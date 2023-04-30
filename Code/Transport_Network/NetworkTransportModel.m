@@ -92,7 +92,14 @@ else
     init_path = logical(mousedata_struct.(ip.Results.study).seed);
     init_path = DataToCCF(init_path,ip.Results.study,matdir);
 end
-init_tau = ip.Results.init_rescale * init_path;
+beta_new = ip.Results.beta * ip.Results.time_scale;
+gamma1_new = ip.Results.gamma1 * ip.Results.time_scale;
+gamma2_new = ip.Results.gamma2 * ip.Results.time_scale;
+taufun = @(x) ip.Results.init_rescale - (x +...
+    (gamma1_new * x.^2)./(beta_new - gamma2_new * x));
+options_taufun = optimset('TolFun',ip.Results.fsolvetol,'Display','off');
+init_rescale_n = fsolve(taufun,0,options_taufun);
+init_tau = init_rescale_n * init_path;
 
 switch ip.Results.connectome_subset
     case 'Hippocampus'
@@ -178,8 +185,8 @@ for h = 1:(nt-1)
     v_2 = diag(Conn.'*V_ss_2_h); % the contributions of the mass change's values in V_ss_2 on eanch node are by columns
     F_in = 6*30*24*(60)^2 * netw_flux(:,:,h); % convert from seconds to 180 days
     F_out = F_in.';
-    m_t= ip.Results.gamma1.*N(:,h).*(2*ip.Results.beta-ip.Results.gamma2.*...
-        N(:,h)./(ip.Results.beta-ip.Results.gamma2.*N(:,h)).^2); % 2.5e-5
+    m_t= gamma1_new.*N(:,h).*(2*beta_new-gamma2_new.*...
+        N(:,h)./(beta_new-gamma2_new.*N(:,h)).^2); % 2.5e-5
     N(:,h+1) = N(:,h)+(1./(Vol.*(1+m_t)+v_1+v_2)).*((diag((Conn.'*F_in)) - diag((Conn*F_out)))*ip.Results.dt); 
     % ((diag((Conn.'*F_in)) - diag((Conn*F_out)))*k + beta*m(:,h)*k-gamma1*(n(:,h).*n(:,h))*k-gamma2*(n(:,h).*m(:,h))*k);
     N_adj_h1 = N(:,h+1).*Adj;
@@ -212,7 +219,7 @@ for h = 1:(nt-1)
                                     'time_scale',ip.Results.time_scale,...
                                     'len_scale',ip.Results.len_scale);
 end
-M = (ip.Results.gamma1 * N.^2)./(ip.Results.beta - ip.Results.gamma2 * N);
+M = (gamma1_new * N.^2)./(beta_new - gamma2_new * N);
 % mass_cons_check = 0;
 % if mass_cons_check
 %     Mass_tot = sum(N,1)+sum(M,1);
