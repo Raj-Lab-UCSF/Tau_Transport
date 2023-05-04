@@ -104,6 +104,11 @@ init_tau = init_rescale_n * init_path;
 switch ip.Results.connectome_subset
     case 'Hippocampus'
         inds = ismember(CCF_labels(:,3),'Hippocampus');
+    case 'Hippocampus+PC+RSP'
+        inds_hipp = ismember(CCF_labels(:,3),'Hippocampus');
+        inds_pc = ismember(CCF_labels(:,1),'Piriform area');
+        inds_rsp = ismember(CCF_labels(:,3),'Retrosplenial Area');
+        inds = logical(inds_hipp + inds_pc + inds_rsp);
     case 'RH'
         inds = ismember(CCF_labels(:,4),'Right Hemisphere');
     case 'LH'
@@ -111,12 +116,14 @@ switch ip.Results.connectome_subset
     otherwise
         inds = logical(ones(size(Conn,1),1)); %#ok<LOGL> 
 end
+CCF_labels(inds,1)
+find(inds)
 Adj = Adj(inds,inds);
 Conn = Conn(inds,inds);
 Vol = DefaultAtlas.volumes(inds);
 init_tau = init_tau(inds);
 nroi = size(Adj,1);
-i_nonzero_init_tau = init_tau > 0;
+% i_nonzero_init_tau = init_tau > 0;
 % i_zero = ~i_nonzero_init_tau;
 
 t = 0:ip.Results.dt:ip.Results.T;
