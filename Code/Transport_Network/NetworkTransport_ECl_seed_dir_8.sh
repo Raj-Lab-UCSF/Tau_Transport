@@ -13,6 +13,6 @@
 #### memory per core
 #SBATCH --mem=8G
 #### Maximum run time 
-#SBATCH --time=2-00:00:00
+#SBATCH --time=7-00:00:00
 
 matlab -nosplash -nodesktop -r "run('~/Tau_Transport/Code/Transport_Network/NetworkTransportModel_Wrapper_GridSearch_ECl_seed_8.m'); quit"
