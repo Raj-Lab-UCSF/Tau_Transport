@@ -16,6 +16,7 @@ init_path_ = [];
 init_rescale_ = 1e-2;
 dt_ = 0.01;
 T_ = 0.1;
+trange_ = [];
 frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
 L_int_ = 1000; % in micrometers
 L1_ = 200;
@@ -58,8 +59,9 @@ addParameter(ip, 'time_scale', time_scale_, validScalar);
 
 addParameter(ip, 'study', study_);
 addParameter(ip, 'init_rescale', init_rescale_, validScalar);
-addParameter(ip, 'dt', dt_, validScalar);
-addParameter(ip, 'T', T_, validScalar);
+addParameter(ip, 'dt', dt_);
+addParameter(ip, 'T', T_);
+addParameter(ip, 'trange', trange_);
 addParameter(ip, 'init_path', init_path_);
 addParameter(ip, 'plotting', plotting_, validLogical);
 parse(ip, varargin{:});
@@ -116,8 +118,6 @@ switch ip.Results.connectome_subset
     otherwise
         inds = logical(ones(size(Conn,1),1)); %#ok<LOGL> 
 end
-CCF_labels(inds,1)
-find(inds)
 Adj = Adj(inds,inds);
 Conn = Conn(inds,inds);
 Vol = DefaultAtlas.volumes(inds);
@@ -126,7 +126,11 @@ nroi = size(Adj,1);
 % i_nonzero_init_tau = init_tau > 0;
 % i_zero = ~i_nonzero_init_tau;
 
-t = 0:ip.Results.dt:ip.Results.T;
+if isempty(ip.Results.trange)
+    t = 0:ip.Results.dt:ip.Results.T;
+else
+    t = ip.Results.trange;
+end
 nt = length(t);
 N = zeros(nroi,nt); 
 N(:,1) = init_tau(:);
@@ -194,7 +198,10 @@ for h = 1:(nt-1)
     F_out = F_in.';
     m_t= gamma1_new.*N(:,h).*(2*beta_new-gamma2_new.*...
         N(:,h)./(beta_new-gamma2_new.*N(:,h)).^2); % 2.5e-5
-    N(:,h+1) = N(:,h)+(1./(Vol.*(1+m_t)+v_1+v_2)).*((diag((Conn.'*F_in)) - diag((Conn*F_out)))*ip.Results.dt); 
+%     N(:,h+1) = N(:,h)+(1./(Vol.*(1+m_t)+v_1+v_2)).*((diag((Conn.'*F_in)) - ...
+%         diag((Conn*F_out)))*ip.Results.dt); 
+    N(:,h+1) = N(:,h)+(1./(Vol.*(1+m_t)+v_1+v_2)).*((diag((Conn.'*F_in)) - ...
+        diag((Conn*F_out)))*(t(h+1)-t(h))); 
     % ((diag((Conn.'*F_in)) - diag((Conn*F_out)))*k + beta*m(:,h)*k-gamma1*(n(:,h).*n(:,h))*k-gamma2*(n(:,h).*m(:,h))*k);
     N_adj_h1 = N(:,h+1).*Adj;
 
@@ -255,8 +262,15 @@ model_outputs.Sim.L2 = ip.Results.L2;
 model_outputs.Sim.L_int = ip.Results.L_int;
 model_outputs.Sim.L_ais = ip.Results.L_ais;
 model_outputs.Sim.L_syn = ip.Results.L_syn;
-model_outputs.Sim.dt = ip.Results.dt;
-model_outputs.Sim.T = ip.Results.T;
+if isempty(ip.Results.trange)
+    model_outputs.Sim.dt = ip.Results.dt;
+    model_outputs.Sim.T = ip.Results.T;
+    model_outputs.Sim.trange = 0:ip.Results.dt:ip.Results.T;
+else
+    model_outputs.Sim.dt = [];
+    model_outputs.Sim.T = ip.Results.trange(end);
+    model_outputs.Sim.trange = ip.Results.trange;
+end
 model_outputs.Sim.len_scale = ip.Results.len_scale;
 model_outputs.Sim.time_scale = ip.Results.time_scale;
 model_outputs.Sim.connectome_subset = ip.Results.connectome_subset;

@@ -9,7 +9,7 @@ loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'test_timescale_0'; % for saving the outputs
+simstr = 'test_timescale_2'; % for saving the outputs
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
@@ -44,9 +44,9 @@ L1 = 200; % default = 200
 L2 = 200; % default = 200
 L_ais = 40; % default = 40
 L_syn = 40; % default = 40
-T = 0.5; % default = 0.05
-dt = 0.01; % default = 0.005
-trange = [];
+T = []; % default = 0.05
+dt = []; % default = 0.005
+trange = [0,exp(linspace(log(0.01),log(0.5),10))];
 resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 plotting = 0;
 reltol = 1e-4;

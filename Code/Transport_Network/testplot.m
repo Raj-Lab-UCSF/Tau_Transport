@@ -1,15 +1,15 @@
 clear; clc;
-simstr = 'ECl_seed_dir_6_outstruct';
+simstr = 'test_timescale_1';
 matdir = '/Users/justintorok/Documents/MATLAB/Tau_Transport';
 load([matdir filesep 'MatFiles' filesep 'CCF_labels.mat'],'CCF_labels');
 load([matdir filesep 'SampleFiles' filesep simstr '.mat'],'output_struct')
 cmap = lines(size(output_struct.Parameter_Grid,1));
-T = output_struct.Simulations(1).Model_Outputs.Sim.T; 
-dt = output_struct.Simulations(1).Model_Outputs.Sim.dt; 
-trange = 6*30 * (0:dt:T);
-rois = CCF_labels([27:37, 240:250],1);
+trange = output_struct.Simulations(1).Model_Outputs.Sim.trange; 
+% dt = output_struct.Simulations(1).Model_Outputs.Sim.dt; 
+trange = 6*30 * trange;
+rois = CCF_labels([27:37, 78:80, 147, 240:250, 291:293, 360],1);
 for i = 1:length(rois)
-    if i < 12
+    if i < 16
         rois{i} = [rois{i} ' RH'];
     else
         rois{i} = [rois{i} ' LH'];

@@ -1,0 +1,19 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#### Specify job name
+#$ -N Tau_Transport
+#### Output file
+#$ -o /protected/data/rajlab1/user_data/parul/spectrome-spatial_results/jobout/$JOB_NAME_$JOB_ID.out
+#### Error file
+#$ -e /protected/data/rajlab1/user_data/parul/spectrome-spatial_results/jobout/$JOB_NAME_$JOB_ID.err
+#### number of cores
+#$ -pe smp 14
+#### Specify queue
+#$ -q long.q
+#### memory per core
+#$ -l mem_free=2G
+#### Maximum run time
+#$ -l h_rt=150:00:00
+
+matlab -nosplash -nodesktop -r "run('~/Tau_Transport/Code/Transport_Network/NetworkTransportModel_Wrapper_GridSearch_ECl_seed_12.m'); quit"

@@ -150,7 +150,7 @@ switch ip.Results.connectome_subset
         Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
     case 'Hippocampus+PC+RSP'
         adjinds = [27:37,78:80,147];
-        adjinds = [adjinds,adjinds+213]
+        adjinds = [adjinds,adjinds+213];
         Adj = Adj(adjinds,adjinds);
     case 'RH'
         Adj = Adj(1:213,1:213);
