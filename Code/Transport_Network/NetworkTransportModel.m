@@ -123,6 +123,17 @@ Conn = Conn(inds,inds);
 Vol = DefaultAtlas.volumes(inds);
 init_tau = init_tau(inds);
 nroi = size(Adj,1);
+regnamecell = CCF_labels(inds,:);
+regnames = cell(size(regnamecell,1),1);
+for i = 1:length(regnames)
+    regname = regnamecell{i,1};
+    reghem = regnamecell{i,4};
+    if strcmp(reghem,'Right Hemisphere')
+        regnames{i} = [regname ' RH'];
+    else
+        regnames{i} = [regname ' LH'];
+    end
+end
 % i_nonzero_init_tau = init_tau > 0;
 % i_zero = ~i_nonzero_init_tau;
 
@@ -274,6 +285,8 @@ end
 model_outputs.Sim.len_scale = ip.Results.len_scale;
 model_outputs.Sim.time_scale = ip.Results.time_scale;
 model_outputs.Sim.connectome_subset = ip.Results.connectome_subset;
+model_outputs.Sim.region_names = regnames;
+model_outputs.Sim.C = Conn;
 model_outputs.Sim.study = ip.Results.study;
 model_outputs.Sim.init_rescale = ip.Results.init_rescale;
 model_outputs.Sim.init_path = init_tau;

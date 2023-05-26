@@ -1,5 +1,5 @@
 clear; clc;
-simstr = 'test_timescale_1';
+simstr = 'test_timescale_3c';
 matdir = '/Users/justintorok/Documents/MATLAB/Tau_Transport';
 load([matdir filesep 'MatFiles' filesep 'CCF_labels.mat'],'CCF_labels');
 load([matdir filesep 'SampleFiles' filesep simstr '.mat'],'output_struct')
@@ -35,7 +35,7 @@ for i = 1:length(output_struct.Simulations)
         ['$\mathbf{\gamma_1}~=~$' num2str(output_struct.Simulations(i).Model_Outputs.Parameters.gamma1)],...
         ['$\mathbf{\epsilon}~=~$' num2str(output_struct.Simulations(i).Model_Outputs.Parameters.epsilon)],...
         ['$\mathbf{\delta}~=~$' num2str(output_struct.Simulations(i).Model_Outputs.Parameters.delta)]};
-    title(['Seed: ' rois{21}]);
+    title(['Seed: ' rois{25}]);
     text(0.15,0.775,txt,'FontSize',18,'FontName','Times','Interpreter','latex','Units','normalized');
     set(gca,'FontSize',20,'FontName','Times')
     nexttile; hold on;
