@@ -1,0 +1,19 @@
+#!/bin/bash
+#$ -S /bin/bash
+#$ -cwd
+#### Specify job name
+#$ -N Tau_Transport
+#### Output file
+#$ -o /wynton/protected/home/rajlab/jtorok/JobOutputs/$JOB_NAME_$JOB_ID.out
+#### Error file
+#$ -e /wynton/protected/home/rajlab/jtorok/JobOutputs/$JOB_NAME_$JOB_ID.out
+#### number of cores
+#$ -pe smp 8
+#### Specify queue
+#$ -q long.q
+#### memory per core
+#$ -l mem_free=8G
+#### Maximum run time
+#$ -l h_rt=150:00:00
+
+matlab -nosplash -nodesktop -r "run('/wynton/protected/home/rajlab/jtorok/Tau_Transport/Code/Transport_Network/NetworkTransportModel_Wrapper_GridSearch_tscale_test_3c_.m'); quit"
