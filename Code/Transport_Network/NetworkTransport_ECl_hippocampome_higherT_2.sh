@@ -17,4 +17,4 @@
 #$ -l h_rt=150:00:00
 
 module load matlab
-matlab -batch "NetworkTransportModel_Wrapper_GridSearch_HigherT_2"
+matlab -batch "NetworkTransportModel_Wrapper_GridSearch_hippocampome_higherT_2"
