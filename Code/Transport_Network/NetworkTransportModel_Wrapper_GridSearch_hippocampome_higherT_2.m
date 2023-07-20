@@ -2,12 +2,14 @@
 % generating tau distributions on the network
 
 %% 1. Define directories for saving outputs
-clear;
-curpath = cd;
+clear; clc;
+curpath = '/wynton/protected/home/rajlab/jtorok/MATLAB/Tau_Transport';
+p = genpath(curpath);
+addpath(p);
 simpath = [curpath filesep 'SampleFiles'];
 loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
-    mkdir(simpath) 
+    mkdir(simpath)
 end
 simstr = 'hippocampome_higherT_2'; % for saving the outputs
 

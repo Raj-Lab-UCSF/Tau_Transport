@@ -16,4 +16,5 @@
 #### Maximum run time
 #$ -l h_rt=150:00:00
 
-matlab -nosplash -nodesktop -r "run('/wynton/protected/home/rajlab/jtorok/Tau_Transport/Code/Transport_Network/NetworkTransportModel_Wrapper_GridSearch_HigherT_2.m'); quit"
+module load matlab
+matlab -batch "NetworkTransportModel_Wrapper_GridSearch_HigherT_2"
