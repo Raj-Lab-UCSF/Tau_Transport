@@ -4,7 +4,7 @@ loadpath = '~/Documents/MATLAB/Tau_Transport/MatFiles';
 simstr = 'test_timescale_3c';
 load([simpath filesep simstr '.mat'],'output_struct');
 
-[Co,Ci] = ConnectomePlot('test_timescale_3c',6,loadpath,simpath,0,figpath);
+[Co,Ci] = ConnectomePlot('test_timescale_3c_2',6,loadpath,simpath,0,figpath);
 TimeCoursePlot(simstr,6,'Heatmap',1,loadpath,simpath,0,figpath);
 TimeCoursePlot(simstr,7,'Heatmap',1,loadpath,simpath,0,figpath);
 

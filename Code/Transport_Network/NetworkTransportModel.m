@@ -69,8 +69,14 @@ parse(ip, varargin{:});
 load([matdir filesep 'Mouse_Tauopathy_Data_HigherQ.mat'],'mousedata_struct'); 
 load([matdir filesep 'DefaultAtlas.mat'],'DefaultAtlas'); 
 load([matdir filesep 'CCF_labels.mat'],'CCF_labels');
-Conn = readmatrix([matdir filesep 'mouse_connectome_19_01.csv']);
-Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
+load([matdir filesep 'Connectomes.mat'],'Connectomes');
+Conn = Connectomes.default;
+thresh_C = 0.8 * mean(nonzeros(Conn(:)));
+Conn(Conn < thresh_C) = 0;
+Adj = logical(Conn);
+% Conn = readmatrix([matdir filesep 'mouse_connectome_19_01.csv']);
+% Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
+
 
 if ~isempty(ip.Results.init_path)
     init_path = zeros(size(Conn,1),1);
