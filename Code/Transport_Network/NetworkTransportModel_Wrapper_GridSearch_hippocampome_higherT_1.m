@@ -58,7 +58,7 @@ init_rescale = 0.05;
 init_path = {'Entorhinal area, lateral part_L'};
 study = 'Hurtado';
 connectome_subset = 'Hippocampus+PC+RSP';
-ncores = 16;
+ncores = 8;
 
 %% 3. Run NetworkTransportModel
 output_struct = struct;

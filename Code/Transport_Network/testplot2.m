@@ -1,12 +1,16 @@
 figpath = '~/Documents/MATLAB/Tau_Transport/OutputFigures';
 simpath = '~/Documents/MATLAB/Tau_Transport/SampleFiles';
 loadpath = '~/Documents/MATLAB/Tau_Transport/MatFiles';
-simstr = 'test_timescale_3c';
+bfpath = '~/Documents/MATLAB/Brainframe-Dev/Brainframe';
+simstr = 'test_timescale_3c_2';
 load([simpath filesep simstr '.mat'],'output_struct');
 
 [Co,Ci] = ConnectomePlot('test_timescale_3c_2',6,loadpath,simpath,0,figpath);
 TimeCoursePlot(simstr,6,'Heatmap',1,loadpath,simpath,0,figpath);
 TimeCoursePlot(simstr,7,'Heatmap',1,loadpath,simpath,0,figpath);
+BrainframePlot('test_timescale_3c_2',6,[5,20,27],1,0,loadpath,simpath,bfpath,figpath);
+
+
 
 inds = [1:24 26:30];
 ts = output_struct.Simulations(2).Model_Outputs.Sim.trange * 180;

@@ -139,9 +139,8 @@ n_ss_syncleft = @(A,B,x) deval(n_ss_syncleft(A,B),x);
 postsyn_mask = spatial_mask('postsyn');
 xmesh_postsyn = xmesh(postsyn_mask);
 x5 = xmesh_postsyn(end);
-% f_ss = @(A,B,C)(n_ss_syncleft(A,B,x4) - A .* x5/diff_n-C);
-n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*x/diff_n); 
-f_ss=@(A,B,C)(n_ss_postsyn(A,B,x5)-C);
+%n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*(x-x4)/diff_n); 
+f_ss=@(A,B,C)(n_ss_syncleft(A,B,x4) - A.*(x5-x4)/diff_n-C);
 
 % % % 5. Flux calculation on network 
 Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
