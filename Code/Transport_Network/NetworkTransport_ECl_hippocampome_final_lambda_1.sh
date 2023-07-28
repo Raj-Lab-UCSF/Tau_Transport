@@ -17,4 +17,4 @@
 #$ -l h_rt=150:00:00
 
 module load matlab
-matlab -batch "NetworkTransportModel_ECl_hippocampome_final_lambda_1"
+matlab -batch "NetworkTransport_ECl_hippocampome_final_lambda_1"
