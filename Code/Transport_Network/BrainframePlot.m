@@ -1,4 +1,4 @@
-function BrainframePlot(simstr,simno,tpts,wflow,savenclose,loadpath_,simpath_,bfpath_,figpath_)
+function F_plot_net = BrainframePlot(simstr,simno,tpts,wflow,savenclose,loadpath_,simpath_,bfpath_,figpath_)
 
 addpath(bfpath_)
 
@@ -27,18 +27,22 @@ X = N + M;
 X = DataToCCF_Transport(X,regs,1,loadpath_);
 X_plot = X;
 X_plot(isnan(X_plot)) = 0;
-X_plot = X_plot / max(X_plot(:));
+X_plot = X_plot / max(X(:));
 X_plot = X_plot .^ 0.5;
 if wflow
+    C = output_struct.Simulations(simno).Model_Outputs.Sim.C;
     F = output_struct.Simulations(simno).Model_Outputs.Predicted.F(:,:,tpts);
+    F = C .* F;
     F_plot = DataToCCF_Transport(F,regs,0,loadpath_);
 %     F_plot = NaN(426);
 %     for j = 1:length(tpts)
 %         F_plot(reg_inds,reg_inds,j) = F(:,:,j); 
 %     end
     F_plot(isnan(F_plot)) = 0;
-    F_plot = F_plot / max(F_plot(:));
+    F_plot = F_plot / max(abs(F_plot(:)));
 end
+seedreg = DataToCCF_Transport(output_struct.Simulations(simno).Model_Outputs.Sim.init_path,regs,1,loadpath_);
+seedreg(isnan(seedreg)) = 0; seedreg = logical(seedreg);
 
 % Chunk of code to define region_groups
 reggroups = zeros(213,1); 
@@ -49,10 +53,12 @@ reggroups(amy) = 1; reggroups(cer) = 2; reggroups(sub) = 3;
 reggroups(hip) = 4; reggroups(hyp) = 5; reggroups(ncx) = 6;
 reggroups(med) = 7; reggroups(mid) = 8; reggroups(olf) = 9;
 reggroups(pal) = 10; reggroups(pon) = 11; reggroups(str) = 12;
-reggroups(tha) = 13;
+reggroups(tha) = 13; 
 reggroups = [reggroups;reggroups];
-cmap = hsv(length(unique(reggroups))); %Creating colormap
-
+reggroups_conn = reggroups;
+reggroups(seedreg) = 14;
+cmap = hsv(length(unique(reggroups))-1); %Creating colormap
+cmap = [cmap; [1 0 0]];
 imgview = [-1.068505859375000e+02,-32.923828125000000];
 for i = 1:length(ts)
     imglabel = sprintf([simstr '_t%d'],tpts(i));
@@ -76,7 +82,7 @@ for i = 1:length(ts)
         F_plot_i(F_plot_i < prctile(nonzeros(F_plot_i(:)),95)) = 0;
         input_struct = brainframe_inputs_mouse(bfpath_,'conmat',F_plot_i,...
                                                      'region_groups',reggroups,...
-                                                     'con_regiongroups',reggroups,...
+                                                     'con_regiongroups',reggroups_conn,...
                                                      'cmap',cmap,...
                                                      'con_cmap',cmap,...
                                                      'xfac',5,...
