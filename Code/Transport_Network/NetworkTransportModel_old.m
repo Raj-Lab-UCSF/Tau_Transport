@@ -156,10 +156,9 @@ W_1=zeros([nroi,size(N)]);
 W_2=zeros([nroi,size(N)]);
 S_ss=zeros([nroi,size(N)]);
 R_ss=zeros([nroi,size(N)]);
-Mass_edge=zeros([nroi,nroi,nt]);
 N_adj_0 = N(:,1) .* Adj;
 fprintf('Calculating initial flux\n')
-[netw_flux(:,:,1),Mass_edge(:,:,1)] = NetworkFluxCalculator(N_adj_0,N(:,1),matdir,...
+netw_flux(:,:,1) = NetworkFluxCalculator(N_adj_0,N(:,1),matdir,...
                                 'beta',ip.Results.beta,...
                                 'gamma1',ip.Results.gamma1,...
                                 'gamma2',ip.Results.gamma2,...
@@ -229,7 +228,7 @@ for h = 1:(nt-1)
 %         + Gamma_h;
 %     m(:,h+1) = m(:,h) - Gamma_h;
     fprintf('Calculating new flux\n')
-    [netw_flux(:,:,h+1),Mass_edge(:,:,h+1)] = NetworkFluxCalculator(N_adj_h1,N(:,h+1),matdir,...
+    netw_flux(:,:,h+1) = NetworkFluxCalculator(N_adj_h1,N(:,h+1),matdir,...
                                     'beta',ip.Results.beta,...
                                     'gamma1',ip.Results.gamma1,...
                                     'gamma2',ip.Results.gamma2,...
@@ -254,22 +253,19 @@ end
 M = (gamma1_new * N.^2)./(beta_new - gamma2_new * N);
 % mass_cons_check = 0;
 % if mass_cons_check
-%     Mass_node = sum(N,1)+sum(M,1);
-%     fprintf('Total Node Mass = %d\n',Mass_node)
-% 
-%     for h=1:(nt-1)
-%         Mass_tot_edge(h) = sum(Mass_edge(:,:,h),'all');
-%     end
-%     fprintf('Total Edge Mass = %d\n',Mass_tot_edge)
-%     M_tot=Mass_node+Mass_tot_edge;
-%       fprintf('Total Mass of the System = %d\n',M_tot);
- %end
+%     Mass_tot = sum(N,1)+sum(M,1);
+%     fprintf('Total Node Mass = %d\n',Mass_tot)
+% %     Mass_edge = NaN(length(Mass_tot),1);
+% %     for h=1:(nt-1)
+% %         Mass_edge(h) = sum(Mass_tot_edge(:,:,h),'all');
+% %     end
+% %     fprintf('Total Edge Mass = %d\n',Mass_edge)
+% end
 
 model_outputs = struct;
 model_outputs.Predicted.N = N;
 model_outputs.Predicted.M = M;
 model_outputs.Predicted.F = netw_flux;
-model_outputs.Predicted.EdgeMass = Mass_edge;
 model_outputs.Parameters.beta = ip.Results.beta;
 model_outputs.Parameters.gamma1 = ip.Results.gamma1;
 model_outputs.Parameters.gamma2 = ip.Results.gamma2;

@@ -1,8 +1,8 @@
-function [network_flux,mass_edge] = NetworkFluxCalculator(tau_x0,tau_xL,matdir,varargin)
+function mass_edge= MassEdgeCalculator(network_flux,tau_x0,varargin)
 
-if nargin < 3
-    matdir = [cd filesep 'MatFiles'];
-end
+% if nargin < 3
+%     matdir = [cd filesep 'MatFiles'];
+% end
 
 % % % 1. Preset values of flexible parameters
 beta_ = 1e-06;
@@ -140,52 +140,58 @@ postsyn_mask = spatial_mask('postsyn');
 xmesh_postsyn = xmesh(postsyn_mask);
 x5 = xmesh_postsyn(end);
 n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*(x-x4)/diff_n); 
-f_ss=@(A,B,C)(n_ss_syncleft(A,B,x4) - A.*(x5-x4)/diff_n-C);
+%f_ss=@(A,B,C)(n_ss_syncleft(A,B,x4) - A.*(x5-x4)/diff_n-C);
 
-% % % 5a. Flux calculation on network 
-Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
-switch ip.Results.connectome_subset
-    case 'Hippocampus'
-        Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
-    case 'Hippocampus+PC+RSP'
-        adjinds = [27:37,78:80,147];
-        adjinds = [adjinds,adjinds+213];
-        Adj = Adj(adjinds,adjinds);
-    case 'RH'
-        Adj = Adj(1:213,1:213);
-    case 'LH'
-        Adj = Adj(214:end,214:end);
-end
-nroi = size(Adj,1);
-network_flux = zeros(nroi);
-for i = 1:nroi
-%     fprintf('ROI %d/%d\n',i,nroi)
-    Adj_in = logical(Adj(:,i));
-    tau_xL_i = tau_xL(i);
-    tau_xL_i = repmat(tau_xL_i,length(Adj_in),1);
-    i_app = logical(((tau_x0(:,i) > 0) + (tau_xL_i > 0)) .* (Adj_in)); 
-    tau_x0_i = tau_x0(i_app,i);
-    tau_xL_i = tau_xL_i(i_app);
-    if ~isempty(tau_x0_i)
-        x0 = zeros(length(tau_x0_i),1);
-        options = optimset('TolFun',ip.Results.fsolvetol,'Display','off');
-        fun_ss = @(A) f_ss(A,tau_x0_i,tau_xL_i);
-        network_flux(i_app,i) = fsolve(fun_ss,x0,options);
-    end
-end
-%%% 5b.mass edge calculation
+% % % % 5. Flux calculation on network 
+% Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
+% switch ip.Results.connectome_subset
+%     case 'Hippocampus'
+%         Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
+%     case 'Hippocampus+PC+RSP'
+%         adjinds = [27:37,78:80,147];
+%         adjinds = [adjinds,adjinds+213];
+%         Adj = Adj(adjinds,adjinds);
+%     case 'RH'
+%         Adj = Adj(1:213,1:213);
+%     case 'LH'
+%         Adj = Adj(214:end,214:end);
+% end
+% nroi = size(Adj,1);
+% network_flux = zeros(nroi);
+% for i = 1:nroi
+% %     fprintf('ROI %d/%d\n',i,nroi)
+%     Adj_in = logical(Adj(:,i));
+%     tau_xL_i = tau_xL(i);
+%     tau_xL_i = repmat(tau_xL_i,length(Adj_in),1);
+%     i_app = logical(((tau_x0(:,i) > 0) + (tau_xL_i > 0)) .* (Adj_in)); 
+%     tau_x0_i = tau_x0(i_app,i);
+%     tau_xL_i = tau_xL_i(i_app);
+%     if ~isempty(tau_x0_i)
+%         x0 = zeros(length(tau_x0_i),1);
+%         options = optimset('TolFun',ip.Results.fsolvetol,'Display','off');
+%         fun_ss = @(A) f_ss(A,tau_x0_i,tau_xL_i);
+%         network_flux(i_app,i) = fsolve(fun_ss,x0,options);
+%     end
+% end
+%mass edge calculation
 network_flux_mass_edge=network_flux(:);
 tau_x0=tau_x0(:);
-n_ss_presyn_eval= n_ss_presyn(network_flux_mass_edge, tau_x0,xmesh_presyn);
-n_ss_ais_eval=n_ss_ais(network_flux_mass_edge,tau_x0,xmesh_ais);
-n_ss_axon_eval=n_ss_axon(network_flux_mass_edge,tau_x0, xmesh_axon);
-n_ss_syncleft_eval=n_ss_syncleft(network_flux_mass_edge,tau_x0,xmesh_syncleft);
-n_ss_postsyn_eval=n_ss_postsyn(network_flux_mass_edge,tau_x0, xmesh_postsyn);
-% n_ss_eval=[n_ss_presyn_eval n_ss_ais_eval n_ss_axon_eval n_ss_syncleft_eval n_ss_postsyn_eval];
+ n_ss_presyn_eval= n_ss_presyn(network_flux_mass_edge, tau_x0,xmesh_presyn);
 
-n_ss_eval_1=[n_ss_presyn_eval n_ss_ais_eval n_ss_axon_eval];
+ n_ss_ais_eval=n_ss_ais(network_flux_mass_edge,tau_x0,xmesh_ais);
+
+  
+ n_ss_axon_eval=n_ss_axon(network_flux_mass_edge,tau_x0, xmesh_axon);
+
+ n_ss_syncleft_eval=n_ss_syncleft(network_flux_mass_edge,tau_x0,xmesh_syncleft);
+
+
+ n_ss_postsyn_eval=n_ss_postsyn(network_flux_mass_edge,tau_x0, xmesh_postsyn);
+ %n_ss_eval=[n_ss_presyn_eval n_ss_ais_eval n_ss_axon_eval n_ss_syncleft_eval n_ss_postsyn_eval];
+ n_ss_eval_1=[n_ss_presyn_eval n_ss_ais_eval n_ss_axon_eval];
 n_m_ss=n_ss_eval_1+(ip.Results.gamma1 * n_ss_eval_1.^2)./(ip.Results.beta-ip.Results.gamma2 *n_ss_eval_1);
-n_m_ss_postsyn=n_ss_postsyn_eval+(ip.Results.gamma1 * n_ss_postsyn_eval.^2)./(ip.Results.beta-ip.Results.gamma2 *n_ss_postsyn_eval);
+ n_m_ss_postsyn=n_ss_postsyn_eval+(ip.Results.gamma1 * n_ss_postsyn_eval.^2)./(ip.Results.beta-ip.Results.gamma2 *n_ss_postsyn_eval);
+ 
 mass_edge=trapz([xmesh_presyn xmesh_ais xmesh_axon], n_m_ss,2)+trapz(xmesh_syncleft, n_ss_syncleft_eval,2)+trapz(xmesh_postsyn, n_m_ss_postsyn,2);
 mass_edge=reshape(mass_edge,nroi,nroi);
 % % % 6. Functions

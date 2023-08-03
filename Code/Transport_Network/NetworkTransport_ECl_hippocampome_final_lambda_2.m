@@ -48,7 +48,7 @@ L_ais = 40; % default = 40
 L_syn = 40; % default = 40
 T = []; % default = 0.05
 dt = []; % default = 0.005
-trange = [0:0.01:0.1, 0.12:0.02:0.3, 0.35:0.03:0.95, 1];
+trange = [0:0.005:0.2, 0.21:0.01:0.5, 0.525:0.025:1];
 resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 plotting = 0;
 reltol = 1e-4;

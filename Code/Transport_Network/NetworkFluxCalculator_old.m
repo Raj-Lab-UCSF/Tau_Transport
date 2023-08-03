@@ -1,4 +1,4 @@
-function [network_flux,mass_edge] = NetworkFluxCalculator(tau_x0,tau_xL,matdir,varargin)
+function network_flux = NetworkFluxCalculator(tau_x0,tau_xL,matdir,varargin)
 
 if nargin < 3
     matdir = [cd filesep 'MatFiles'];
@@ -139,10 +139,10 @@ n_ss_syncleft = @(A,B,x) deval(n_ss_syncleft(A,B),x);
 postsyn_mask = spatial_mask('postsyn');
 xmesh_postsyn = xmesh(postsyn_mask);
 x5 = xmesh_postsyn(end);
-n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*(x-x4)/diff_n); 
+%n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*(x-x4)/diff_n); 
 f_ss=@(A,B,C)(n_ss_syncleft(A,B,x4) - A.*(x5-x4)/diff_n-C);
 
-% % % 5a. Flux calculation on network 
+% % % 5. Flux calculation on network 
 Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
 switch ip.Results.connectome_subset
     case 'Hippocampus'
@@ -173,21 +173,7 @@ for i = 1:nroi
         network_flux(i_app,i) = fsolve(fun_ss,x0,options);
     end
 end
-%%% 5b.mass edge calculation
-network_flux_mass_edge=network_flux(:);
-tau_x0=tau_x0(:);
-n_ss_presyn_eval= n_ss_presyn(network_flux_mass_edge, tau_x0,xmesh_presyn);
-n_ss_ais_eval=n_ss_ais(network_flux_mass_edge,tau_x0,xmesh_ais);
-n_ss_axon_eval=n_ss_axon(network_flux_mass_edge,tau_x0, xmesh_axon);
-n_ss_syncleft_eval=n_ss_syncleft(network_flux_mass_edge,tau_x0,xmesh_syncleft);
-n_ss_postsyn_eval=n_ss_postsyn(network_flux_mass_edge,tau_x0, xmesh_postsyn);
-% n_ss_eval=[n_ss_presyn_eval n_ss_ais_eval n_ss_axon_eval n_ss_syncleft_eval n_ss_postsyn_eval];
 
-n_ss_eval_1=[n_ss_presyn_eval n_ss_ais_eval n_ss_axon_eval];
-n_m_ss=n_ss_eval_1+(ip.Results.gamma1 * n_ss_eval_1.^2)./(ip.Results.beta-ip.Results.gamma2 *n_ss_eval_1);
-n_m_ss_postsyn=n_ss_postsyn_eval+(ip.Results.gamma1 * n_ss_postsyn_eval.^2)./(ip.Results.beta-ip.Results.gamma2 *n_ss_postsyn_eval);
-mass_edge=trapz([xmesh_presyn xmesh_ais xmesh_axon], n_m_ss,2)+trapz(xmesh_syncleft, n_ss_syncleft_eval,2)+trapz(xmesh_postsyn, n_m_ss_postsyn,2);
-mass_edge=reshape(mass_edge,nroi,nroi);
 % % % 6. Functions
     function nprime=ode_ss_n(x,A,n,D) %#ok<INUSD> 
         nprime=1/D*-A;
