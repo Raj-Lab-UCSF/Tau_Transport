@@ -18,19 +18,19 @@ figpath = '~/Documents/MATLAB/Tau_Transport/OutputFigures';
 simpath = '~/Documents/MATLAB/Tau_Transport/SampleFiles';
 loadpath = '~/Documents/MATLAB/Tau_Transport/MatFiles';
 bfpath = '~/Documents/MATLAB/Brainframe-Dev/Brainframe';
-simstr = 'hippocampome_higherT_1';
-load([simpath filesep simstr '.mat'],'output_struct');
+simstr = 'hippocampome_final_lambda';
+load([simpath filesep simstr '_1.mat'],'output_struct');
 
-[Co,Ci] = ConnectomePlot(simstr,1,loadpath,simpath,0,figpath);
-TimeCoursePlot(simstr,2,'Heatmap',1,loadpath,simpath,0,figpath);
-TimeCoursePlot(simstr,3,'Heatmap',1,loadpath,simpath,0,figpath);
-BrainframePlot(simstr,2,[1,10,20,37],1,0,loadpath,simpath,bfpath,figpath);
-BrainframePlot(simstr,3,[1,10,20,37],1,0,loadpath,simpath,bfpath,figpath);
+% [Co,Ci] = ConnectomePlot(simstr,1,loadpath,simpath,0,figpath);
+TimeCoursePlot([simstr '_1'],21,'Heatmap',1,loadpath,simpath,0,figpath);
+TimeCoursePlot([simstr '_1'],7,'Heatmap',1,loadpath,simpath,0,figpath);
+% BrainframePlot(simstr,2,[1,10,20,37],1,0,loadpath,simpath,bfpath,figpath);
+% BrainframePlot(simstr,3,[1,10,20,37],1,0,loadpath,simpath,bfpath,figpath);
 
-TimeCoursePlot('hippocampome_final_lambda_1',2,'Line',0,loadpath,simpath,0,figpath);
-TimeCoursePlot('hippocampome_final_lambda_1',3,'Line',0,loadpath,simpath,0,figpath);
-TimeCoursePlot('hippocampome_final_lambda_2',2,'Line',0,loadpath,simpath,0,figpath);
-TimeCoursePlot('hippocampome_final_lambda_2',3,'Line',0,loadpath,simpath,0,figpath);
+TimeCoursePlot([simstr '_1'],21,'Line',0,loadpath,simpath,0,figpath);
+TimeCoursePlot([simstr '_1'],7,'Line',0,loadpath,simpath,0,figpath);
+% TimeCoursePlot([simstr '_2'],2,'Line',0,loadpath,simpath,0,figpath);
+% TimeCoursePlot([simstr '_2'],3,'Line',0,loadpath,simpath,0,figpath);
 
 
 inds = [1:24 26:30];

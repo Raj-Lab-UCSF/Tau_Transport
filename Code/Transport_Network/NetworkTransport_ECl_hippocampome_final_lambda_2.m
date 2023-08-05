@@ -11,7 +11,7 @@ loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'hippocampome_final_lambda_1'; % for saving the outputs
+simstr = 'hippocampome_final_lambda_2'; % for saving the outputs
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
