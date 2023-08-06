@@ -8,7 +8,7 @@
 #### Error file
 #$ -e /wynton/protected/home/rajlab/jtorok/JobOutputs/$JOB_NAME_$JOB_ID.out
 #### number of cores
-#$ -pe smp 16
+#$ -pe smp 27
 #### Specify queue
 #$ -q long.q
 #### memory per core
