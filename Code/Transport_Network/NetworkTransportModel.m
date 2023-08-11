@@ -31,6 +31,7 @@ fsolvetol_ = 1e-6;
 connectome_subset_ = 'Hippocampus';
 time_scale_ = 1;
 len_scale_ = 1e-3;
+sim_no_ = 1;
 
 ip = inputParser;
 % validChar = @(x) ischar(x);
@@ -64,6 +65,7 @@ addParameter(ip, 'T', T_);
 addParameter(ip, 'trange', trange_);
 addParameter(ip, 'init_path', init_path_);
 addParameter(ip, 'plotting', plotting_, validLogical);
+addParameter(ip, 'sim_no', sim_no_, validScalar);
 parse(ip, varargin{:});
 
 load([matdir filesep 'Mouse_Tauopathy_Data_HigherQ.mat'],'mousedata_struct'); 
@@ -158,7 +160,7 @@ S_ss=zeros([nroi,size(N)]);
 R_ss=zeros([nroi,size(N)]);
 Mass_edge=zeros([nroi,nroi,nt]);
 N_adj_0 = N(:,1) .* Adj;
-fprintf('Calculating initial flux\n')
+fprintf('Calculating initial flux, Simulation %d \n',ip.Results.sim_no)
 [netw_flux(:,:,1),Mass_edge(:,:,1)] = NetworkFluxCalculator(N_adj_0,N(:,1),matdir,...
                                 'beta',ip.Results.beta,...
                                 'gamma1',ip.Results.gamma1,...
@@ -182,7 +184,7 @@ fprintf('Calculating initial flux\n')
                                 'len_scale',ip.Results.len_scale); 
 
 for h = 1:(nt-1)
-    fprintf('Time step %d/%d\n',h,nt-1)
+    fprintf('Time step %d/%d, Simulation %d\n',h,nt-1,ip.Results.sim_no)
     N_adj_in = N(:,h) .* Adj; %incoming edges for columns
     fprintf('Calculating weights\n')
     [W_1(:,:,h),W_2(:,:,h),R_ss(:,:,h),S_ss(:,:,h)] =...
@@ -228,7 +230,7 @@ for h = 1:(nt-1)
 %     n(:,h+1) = n(:,h) + (diag((Conn.' * F_in)) - diag((Conn * F_out))) * ip.Results.dt...
 %         + Gamma_h;
 %     m(:,h+1) = m(:,h) - Gamma_h;
-    fprintf('Calculating new flux\n')
+    fprintf('Calculating new flux, Simulation %d\n',ip.Results.sim_no)
     [netw_flux(:,:,h+1),Mass_edge(:,:,h+1)] = NetworkFluxCalculator(N_adj_h1,N(:,h+1),matdir,...
                                     'beta',ip.Results.beta,...
                                     'gamma1',ip.Results.gamma1,...

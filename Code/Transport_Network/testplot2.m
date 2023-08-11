@@ -13,26 +13,63 @@
 % 3. Pairwise correlations between simulations
 % 4. Show comparison between this model and network diffusion model with
 % different s parameters (maybe include alpha as well?)
-
+%% Load things
 figpath = '~/Documents/MATLAB/Tau_Transport/OutputFigures';
 simpath = '~/Documents/MATLAB/Tau_Transport/SampleFiles';
 loadpath = '~/Documents/MATLAB/Tau_Transport/MatFiles';
 bfpath = '~/Documents/MATLAB/Brainframe-Dev/Brainframe';
 simstr = 'hippocampome_final_lambda';
-load([simpath filesep simstr '_1.mat'],'output_struct');
+simstr_2 = 3;
+simstr = [simstr '_' num2str(simstr_2)];
+load([simpath filesep simstr '.mat'],'output_struct');
 
+load([loadpath filesep 'DefaultAtlas.mat'],'DefaultAtlas');
+V_inv = 1./DefaultAtlas.volumes; V_inv = diag(V_inv);
+load([loadpath filesep 'CCF_labels.mat'],'CCF_labels');
+switch output_struct.Simulations(1).Model_Outputs.Sim.connectome_subset
+    case 'Hippocampus'
+        inds = ismember(CCF_labels(:,3),'Hippocampus');
+    case 'Hippocampus+PC+RSP'
+        inds_hipp = ismember(CCF_labels(:,3),'Hippocampus');
+        inds_pc = ismember(CCF_labels(:,1),'Piriform area');
+        inds_rsp = ismember(CCF_labels(:,3),'Retrosplenial Area');
+        inds = logical(inds_hipp + inds_pc + inds_rsp);
+    case 'RH'
+        inds = ismember(CCF_labels(:,4),'Right Hemisphere');
+    case 'LH'
+        inds = ismember(CCF_labels(:,4),'Left Hemisphere');
+end
+C = output_struct.Simulations(1).Model_Outputs.Sim.C;
+V_inv = V_inv(inds,inds);
+
+%% Check mass conservation
+masstots = NaN(27,91);
+for i = 1:size(masstots,1)
+    sim_ = output_struct.Simulations(i).Model_Outputs.Predicted;
+    for j = 1:size(masstots,2)
+        Ns = V_inv * sim_.N(:,j);
+        Ms = V_inv * sim_.M(:,j);
+        edges = C .* sim_.EdgeMass(:,:,j);
+        masstots(i,j) = sum(Ns) + sum(Ms) + sum(edges(:));
+    end
+end
+reldiffs = masstots - masstots(:,1);
+reldiffs = reldiffs ./ masstots(:,1);
+figure; hold on;
+for i = 1:size(masstots,1)
+    plot(output_struct.Simulations(i).Model_Outputs.Sim.trange*180,reldiffs(i,:)); 
+end
+xlabel('t (days)'); ylabel('Relative Difference w.r.t. t0'); set(gca,'FontSize',16)
+
+%%
 % [Co,Ci] = ConnectomePlot(simstr,1,loadpath,simpath,0,figpath);
-TimeCoursePlot([simstr '_1'],21,'Heatmap',1,loadpath,simpath,0,figpath);
-TimeCoursePlot([simstr '_1'],7,'Heatmap',1,loadpath,simpath,0,figpath);
-% BrainframePlot(simstr,2,[1,10,20,37],1,0,loadpath,simpath,bfpath,figpath);
-% BrainframePlot(simstr,3,[1,10,20,37],1,0,loadpath,simpath,bfpath,figpath);
-
-TimeCoursePlot([simstr '_1'],21,'Line',0,loadpath,simpath,0,figpath);
-TimeCoursePlot([simstr '_1'],7,'Line',0,loadpath,simpath,0,figpath);
-% TimeCoursePlot([simstr '_2'],2,'Line',0,loadpath,simpath,0,figpath);
-% TimeCoursePlot([simstr '_2'],3,'Line',0,loadpath,simpath,0,figpath);
-
-
+% idxs = find(output_struct.Parameter_Grid(:,7)==100);
+idxs = [3 12 21]+4;
+for i = 1:length(idxs)
+%     TimeCoursePlot(simstr,idxs(i),'Heatmap',1,loadpath,simpath,0,figpath);
+    TimeCoursePlot(simstr,idxs(i),'Line',0,loadpath,simpath,0,figpath);
+end
+%%
 inds = [1:24 26:30];
 ts = output_struct.Simulations(2).Model_Outputs.Sim.trange * 180;
 tot_ret = output_struct.Simulations(2).Model_Outputs.Predicted.N(inds,:) + ...
