@@ -8,11 +8,9 @@
 #### Error file
 #$ -e /wynton/protected/home/rajlab/jtorok/JobOutputs/$JOB_NAME_$JOB_ID.out
 #### number of cores
-#$ -pe smp 80
-#### Specify queue
-#$ -q long.q
+#$ -pe smp 32
 #### memory per core
-#$ -l mem_free=8G
+#$ -l mem_free=2G
 #### Maximum run time
 #$ -l h_rt=150:00:00
 

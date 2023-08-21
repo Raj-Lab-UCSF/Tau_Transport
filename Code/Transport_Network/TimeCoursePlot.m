@@ -78,52 +78,69 @@ if strcmp(plottype,'Line')
     xticks([0,trange(end)/2,trange(end)]); yticks([0,max(N(:))/2,max(N(:))]);
     yticklabels({'0', num2str(max(N(:))/2,'%.1d'),num2str(max(N(:)),'%.1d')});
     ylabel('N');
-    txt = {['$\mathbf{\lambda_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda1)],...
-        ['$\mathbf{\lambda_2}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda2)],...
-        ['$\mathbf{\beta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.beta)],...
-        ['$\mathbf{\gamma_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.gamma1)],...
-        ['$\mathbf{\epsilon}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.epsilon)],...
-        ['$\mathbf{\delta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.delta)]};
+%     txt = {['$\mathbf{\lambda_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda1)...
+%         ' $\mathbf{\lambda_2}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda2)],...
+%         ['$\mathbf{\beta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.beta)...
+%         ' $\mathbf{\gamma_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.gamma1)],...
+%         ['$\mathbf{\delta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.delta)...
+%         ' $\mathbf{\epsilon}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.epsilon)]};
     title(['Seed: ' seedreg]);
-    text(0.6,0.775,txt,'FontSize',18,'FontName','Times','Interpreter','latex','Units','normalized');
     set(gca,'FontSize',20,'FontName','Times')
     nexttile; hold on;
     for j = 1:size(M,1)
         h = plot(trange,M(j,:));
         leghands = [leghands h];
     end
-    tot_T = N(:,end) + M(:,end); 
-    [~,sortinds] = sort(tot_T,'descend');
-    sortinds = sortinds(1:5); leghands = leghands(sortinds);
-    legend(leghands,regnames(sortinds),'Location','northeast','box','off','FontSize',18)
+%     tot_T = N(:,end) + M(:,end); 
+%     [~,sortinds] = sort(tot_T,'descend');
+%     sortinds = sortinds(1:5); leghands = leghands(sortinds);
+%     legend(leghands,regnames(sortinds),'Location','northeast','box','off','FontSize',18)
+    txt1 = {['$\mathbf{\lambda_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda1)],...
+        ['$\mathbf{\beta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.beta)],...
+        ['$\mathbf{\delta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.delta)]};
+    text(0.15,0.85,txt1,'FontSize',16,'FontName','Times','Interpreter','latex','Units','normalized');
+    txt2 = {['$\mathbf{\lambda_2}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda2)],...
+        ['$\mathbf{\gamma_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.gamma1)],...
+        ['$\mathbf{\epsilon}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.epsilon)]};
+    text(0.45,0.85,txt2,'FontSize',16,'FontName','Times','Interpreter','latex','Units','normalized');
     xlim([0,trange(end)]); ylim([0,max(M(:))]);
     xticks([0,trange(end)/2,trange(end)]); yticks([0,max(M(:))/2,max(M(:))]);
     yticklabels({'0', num2str(max(M(:))/2,'%.1d'),num2str(max(M(:)),'%.1d')});
     xlabel('t (Days)'); ylabel('M');
     set(gca,'FontSize',20,'FontName','Times')
 elseif strcmp(plottype,'Heatmap')
+    trange_int = linspace(0,180,181);
+    N_int = zeros(size(N,1),length(trange_int));
+    M_int = N_int;
+    for i = 1:size(N,1)
+        N_int(i,:) = interpn(trange,N(i,:),trange_int);
+        M_int(i,:) = interpn(trange,M(i,:),trange_int);
+    end
     figure('Position',[0,0,3000,800]); 
     t = tiledlayout(1,2); nexttile;
-    imagesc(N); colormap('hot'); colorbar;
+    imagesc(N_int); colormap('hot'); colorbar;
 %     xlabs = cell(1,length(subclasses_));
 %     for i = 1:length(subclasses_)
 %         col = cmap_x(i,:);
 %         xlabs{i} = sprintf('\\color[rgb]{%f,%f,%f}%s',col(1),col(2),col(3),subclasses_{i});
 %     end
-    trangecell = cell(1,length(trange));
-    for i = 1:length(trange)
-        trangecell{i} = num2str(trange(i),'%.1f');
+    trangecell = cell(1,length(trange_int));
+    trangeinds = 1:20:length(trange_int);
+    for i = 1:length(trange_int)
+        if ismember(i,trangeinds)
+            trangecell{i} = num2str(trange_int(i),'%.0f');
+        end
     end
-    set(gca,'TickLength',[0 0],'XTick',1:length(trange),...
-        'XTickLabel',trangecell,...
+    set(gca,'TickLength',[0 0],'XTick',1:length(trange_int),...
+        'XTickLabel',trangecell,'XTickLabelRotation',0,...
         'YTick',1:length(regnames),'YTickLabel',regnames,...
         'TickLabelInterpreter','tex','FontName','Times','FontSize',20)
     title('N');
 
     nexttile;
-    imagesc(M); colormap('hot'); colorbar;
-    set(gca,'TickLength',[0 0],'XTick',1:length(trange),...
-        'XTickLabel',trangecell,'YTickLabel',{},...
+    imagesc(M_int); colormap('hot'); colorbar;
+    set(gca,'TickLength',[0 0],'XTick',1:length(trange_int),...
+        'XTickLabel',trangecell,'XTickLabelRotation',0,'YTickLabel',{},...
         'TickLabelInterpreter','tex','FontName','Times','FontSize',20)
     title('M');
     xlabel(t,'Time (Days)','FontName','Times','FontSize',20,'FontWeight','bold')

@@ -21,7 +21,7 @@ paramnames = {'beta','gamma1','gamma2','frac','lambda1','lambda2',...
     'delta','epsilon'};
 inputparams(1,:) = paramnames;
 inputparams{2,1} = 1e-6; % beta
-inputparams{2,2} = [5e-4,1e-3,2e-3,4e-3,8e-3]; % gamma1
+inputparams{2,2} = [1e-3,2e-3]; % gamma1
 inputparams{2,3} = 0; % gamma2
 inputparams{2,4} = 0.92; % frac
 inputparams{2,5} = 0.05; % lambda1
@@ -58,7 +58,7 @@ init_rescale = 0.02;
 init_path = {'Entorhinal area, lateral part_L'};
 study = 'Hurtado';
 connectome_subset = 'Hippocampus+PC+RSP';
-ncores = 80;
+ncores = 32;
 
 %% 3. Run NetworkTransportModel
 output_struct = struct;

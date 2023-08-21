@@ -64,10 +64,10 @@ xlabel('t (days)'); ylabel('Relative Difference w.r.t. t0'); set(gca,'FontSize',
 %%
 % [Co,Ci] = ConnectomePlot(simstr,1,loadpath,simpath,0,figpath);
 % idxs = find(output_struct.Parameter_Grid(:,7)==100);
-idxs = [3 12 21]+4;
+idxs = 1:5:27;
 for i = 1:length(idxs)
-%     TimeCoursePlot(simstr,idxs(i),'Heatmap',1,loadpath,simpath,0,figpath);
-    TimeCoursePlot(simstr,idxs(i),'Line',0,loadpath,simpath,0,figpath);
+    TimeCoursePlot(simstr,idxs(i),'Heatmap',1,loadpath,simpath,0,figpath);
+%     TimeCoursePlot(simstr,idxs(i),'Line',0,loadpath,simpath,0,figpath);
 end
 %%
 inds = [1:24 26:30];

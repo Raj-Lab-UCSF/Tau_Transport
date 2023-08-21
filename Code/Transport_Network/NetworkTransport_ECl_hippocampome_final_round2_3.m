@@ -11,7 +11,7 @@ loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'hippocampome_final_round2_1'; % for saving the outputs
+simstr = 'hippocampome_final_round2_3'; % for saving the outputs
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
@@ -21,11 +21,11 @@ paramnames = {'beta','gamma1','gamma2','frac','lambda1','lambda2',...
     'delta','epsilon'};
 inputparams(1,:) = paramnames;
 inputparams{2,1} = 1e-6; % beta
-inputparams{2,2} = [5e-4,1e-3,2e-3,4e-3,8e-3]; % gamma1
+inputparams{2,2} = [4e-3,8e-3]; % gamma1
 inputparams{2,3} = 0; % gamma2
 inputparams{2,4} = 0.92; % frac
-inputparams{2,5} = 0.1; % lambda1
-inputparams{2,6} = 0.1; % lambda2
+inputparams{2,5} = 0.05; % lambda1
+inputparams{2,6} = 0.05; % lambda2
 inputparams{2,7} = [10,25,50,100]; % delta
 inputparams{2,8} = [10,25,50,100]; % epsilon
 
@@ -58,7 +58,7 @@ init_rescale = 0.02;
 init_path = {'Entorhinal area, lateral part_L'};
 study = 'Hurtado';
 connectome_subset = 'Hippocampus+PC+RSP';
-ncores = 80;
+ncores = 32;
 
 %% 3. Run NetworkTransportModel
 output_struct = struct;
