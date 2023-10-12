@@ -13,14 +13,13 @@
 % 3. Pairwise correlations between simulations
 % 4. Show comparison between this model and network diffusion model with
 % different s parameters (maybe include alpha as well?)
-%% Load things
-figpath = '~/Documents/MATLAB/Tau_Transport/OutputFigures';
-simpath = '~/Documents/MATLAB/Tau_Transport/SampleFiles';
+
+%% 0. Load things
+figpath = '~/Documents/MATLAB/Tau_Transport_OtherFiles/Figures';
+simpath = '~/Documents/MATLAB/Tau_Transport_OtherFiles/FinalSimFiles';
 loadpath = '~/Documents/MATLAB/Tau_Transport/MatFiles';
 bfpath = '~/Documents/MATLAB/Brainframe-Dev/Brainframe';
-simstr = 'hippocampome_final_lambda';
-simstr_2 = 3;
-simstr = [simstr '_' num2str(simstr_2)];
+simstr = 'hippocampome_final_round2';
 load([simpath filesep simstr '.mat'],'output_struct');
 
 load([loadpath filesep 'DefaultAtlas.mat'],'DefaultAtlas');
@@ -42,33 +41,32 @@ end
 C = output_struct.Simulations(1).Model_Outputs.Sim.C;
 V_inv = V_inv(inds,inds);
 
-%% Check mass conservation
-masstots = NaN(27,91);
-for i = 1:size(masstots,1)
-    sim_ = output_struct.Simulations(i).Model_Outputs.Predicted;
-    for j = 1:size(masstots,2)
-        Ns = V_inv * sim_.N(:,j);
-        Ms = V_inv * sim_.M(:,j);
-        edges = C .* sim_.EdgeMass(:,:,j);
-        masstots(i,j) = sum(Ns) + sum(Ms) + sum(edges(:));
-    end
-end
-reldiffs = masstots - masstots(:,1);
-reldiffs = reldiffs ./ masstots(:,1);
-figure; hold on;
-for i = 1:size(masstots,1)
-    plot(output_struct.Simulations(i).Model_Outputs.Sim.trange*180,reldiffs(i,:)); 
-end
-xlabel('t (days)'); ylabel('Relative Difference w.r.t. t0'); set(gca,'FontSize',16)
+%% 1. Check mass conservation
+MassConservationPlot(simstr,loadpath,simpath,1,figpath);
 
-%%
-% [Co,Ci] = ConnectomePlot(simstr,1,loadpath,simpath,0,figpath);
+%% 2. Plot connectivity to/from seed region
+SeedConnectivityPlot(simstr,1,loadpath,simpath,1,figpath);
+
+%% 3. Plot correlations w.r.t. seed connectivity
+lambda = 0.025;
+beta = 1e-6;
+frac = 0.92;
+gamma1 = 2e-3;
+gamma2 = 0;
+delta = 10;
+epsilon = 10;
+
+%% 4. Time course plots
 % idxs = find(output_struct.Parameter_Grid(:,7)==100);
-idxs = 1:5:27;
+idxs = 1:size(output_struct.Parameter_Grid,1);
 for i = 1:length(idxs)
     TimeCoursePlot(simstr,idxs(i),'Heatmap',1,loadpath,simpath,0,figpath);
-%     TimeCoursePlot(simstr,idxs(i),'Line',0,loadpath,simpath,0,figpath);
+    TimeCoursePlot(simstr,idxs(i),'Line',0,loadpath,simpath,0,figpath);
 end
+
+%% 5. Brainframe plots
+BrainframePlot(simstr,1,150,1,0,loadpath,simpath,bfpath,figpath)
+
 %%
 inds = [1:24 26:30];
 ts = output_struct.Simulations(2).Model_Outputs.Sim.trange * 180;

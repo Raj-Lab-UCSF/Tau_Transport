@@ -28,7 +28,7 @@ X = DataToCCF_Transport(X,regs,1,loadpath_);
 X_plot = X;
 X_plot(isnan(X_plot)) = 0;
 X_plot = X_plot / max(X(:));
-X_plot = X_plot .^ 0.5;
+X_plot = X_plot .^ 0.5; % normalization is off, check later 10/12/2023
 if wflow
     C = output_struct.Simulations(simno).Model_Outputs.Sim.C;
     F = output_struct.Simulations(simno).Model_Outputs.Predicted.F(:,:,tpts);

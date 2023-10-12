@@ -66,18 +66,23 @@ if exclseed
     M(initpath > 0,:) = [];
     regnames(initpath > 0) = [];
 end
+X = N + M;
 
 if strcmp(plottype,'Line')
-    figure('Position',[0,0,500,1000]); tiledlayout(2,1,'TileSpacing','compact');
-    nexttile; hold on;
-    leghands = [];
-    for j = 1:size(N,1)
-        plot(trange,N(j,:));
+    figure('Position',[0,0,600,500]); hold on;
+%     tiledlayout(2,1,'TileSpacing','compact');
+%     nexttile; hold on;
+%     leghands = [];
+%     for j = 1:size(N,1)
+%         plot(trange,N(j,:));
+%     end
+    for j = 1:size(X,1)
+        plot(trange,X(j,:));
     end
-    xlim([0,trange(end)]); ylim([0,max(N(:))]);
-    xticks([0,trange(end)/2,trange(end)]); yticks([0,max(N(:))/2,max(N(:))]);
-    yticklabels({'0', num2str(max(N(:))/2,'%.1d'),num2str(max(N(:)),'%.1d')});
-    ylabel('N');
+    xlim([0,trange(end)]); ylim([0,max(X(:))]);
+    xticks([0,trange(end)/2,trange(end)]); yticks([0,max(X(:))/2,max(X(:))]);
+    yticklabels({'0', num2str(max(X(:))/2,'%.1d'),num2str(max(X(:)),'%.1d')});
+    ylabel('Total tau');
 %     txt = {['$\mathbf{\lambda_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda1)...
 %         ' $\mathbf{\lambda_2}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda2)],...
 %         ['$\mathbf{\beta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.beta)...
@@ -85,12 +90,12 @@ if strcmp(plottype,'Line')
 %         ['$\mathbf{\delta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.delta)...
 %         ' $\mathbf{\epsilon}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.epsilon)]};
     title(['Seed: ' seedreg]);
-    set(gca,'FontSize',20,'FontName','Times')
-    nexttile; hold on;
-    for j = 1:size(M,1)
-        h = plot(trange,M(j,:));
-        leghands = [leghands h];
-    end
+    set(gca,'FontSize',20,'FontName','Times'); 
+%     nexttile; hold on;
+%     for j = 1:size(M,1)
+%         h = plot(trange,M(j,:));
+%         leghands = [leghands h];
+%     end
 %     tot_T = N(:,end) + M(:,end); 
 %     [~,sortinds] = sort(tot_T,'descend');
 %     sortinds = sortinds(1:5); leghands = leghands(sortinds);
@@ -103,10 +108,10 @@ if strcmp(plottype,'Line')
         ['$\mathbf{\gamma_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.gamma1)],...
         ['$\mathbf{\epsilon}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.epsilon)]};
     text(0.45,0.85,txt2,'FontSize',16,'FontName','Times','Interpreter','latex','Units','normalized');
-    xlim([0,trange(end)]); ylim([0,max(M(:))]);
-    xticks([0,trange(end)/2,trange(end)]); yticks([0,max(M(:))/2,max(M(:))]);
-    yticklabels({'0', num2str(max(M(:))/2,'%.1d'),num2str(max(M(:)),'%.1d')});
-    xlabel('t (Days)'); ylabel('M');
+%     xlim([0,trange(end)]); ylim([0,max(M(:))]);
+%     xticks([0,trange(end)/2,trange(end)]); yticks([0,max(M(:))/2,max(M(:))]);
+%     yticklabels({'0', num2str(max(M(:))/2,'%.1d'),num2str(max(M(:)),'%.1d')});
+%     xlabel('t (Days)'); ylabel('M');
     set(gca,'FontSize',20,'FontName','Times')
 elseif strcmp(plottype,'Heatmap')
     trange_int = linspace(0,180,181);
@@ -116,9 +121,11 @@ elseif strcmp(plottype,'Heatmap')
         N_int(i,:) = interpn(trange,N(i,:),trange_int);
         M_int(i,:) = interpn(trange,M(i,:),trange_int);
     end
-    figure('Position',[0,0,3000,800]); 
-    t = tiledlayout(1,2); nexttile;
-    imagesc(N_int); colormap('hot'); colorbar;
+    X_int = N_int + M_int;
+
+    figure('Position',[0,0,1200,800]); 
+%     t = tiledlayout(1,2); nexttile;
+    imagesc(X_int); colormap('hot'); colorbar;
 %     xlabs = cell(1,length(subclasses_));
 %     for i = 1:length(subclasses_)
 %         col = cmap_x(i,:);
@@ -135,15 +142,15 @@ elseif strcmp(plottype,'Heatmap')
         'XTickLabel',trangecell,'XTickLabelRotation',0,...
         'YTick',1:length(regnames),'YTickLabel',regnames,...
         'TickLabelInterpreter','tex','FontName','Times','FontSize',20)
-    title('N');
+    title('Total Tau');
 
-    nexttile;
-    imagesc(M_int); colormap('hot'); colorbar;
-    set(gca,'TickLength',[0 0],'XTick',1:length(trange_int),...
-        'XTickLabel',trangecell,'XTickLabelRotation',0,'YTickLabel',{},...
-        'TickLabelInterpreter','tex','FontName','Times','FontSize',20)
-    title('M');
-    xlabel(t,'Time (Days)','FontName','Times','FontSize',20,'FontWeight','bold')
+%     nexttile;
+%     imagesc(M_int); colormap('hot'); colorbar;
+%     set(gca,'TickLength',[0 0],'XTick',1:length(trange_int),...
+%         'XTickLabel',trangecell,'XTickLabelRotation',0,'YTickLabel',{},...
+%         'TickLabelInterpreter','tex','FontName','Times','FontSize',20)
+%     title('M');
+%     xlabel(t,'Time (Days)','FontName','Times','FontSize',20,'FontWeight','bold')
 end
 
 if savenclose
