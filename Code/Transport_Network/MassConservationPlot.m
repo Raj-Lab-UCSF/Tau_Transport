@@ -52,7 +52,7 @@ figure; hold on;
 for i = 1:size(masstots,1)
     plot(output_struct.Simulations(i).Model_Outputs.Sim.trange*180,reldiffs(i,:),'Color',cmap(i,:)); 
 end
-xlabel('t (days)'); ylabel('Relative Difference w.r.t. t0'); xlim([0,max(ts)*180])
+xlabel('t (Days)'); ylabel('Relative Difference w.r.t. t0'); xlim([0,max(ts)*180])
 set(gca,'FontSize',20,'FontName','Times')
 
 if savenclose

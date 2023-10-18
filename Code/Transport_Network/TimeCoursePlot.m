@@ -82,7 +82,7 @@ if strcmp(plottype,'Line')
     xlim([0,trange(end)]); ylim([0,max(X(:))]);
     xticks([0,trange(end)/2,trange(end)]); yticks([0,max(X(:))/2,max(X(:))]);
     yticklabels({'0', num2str(max(X(:))/2,'%.1d'),num2str(max(X(:)),'%.1d')});
-    ylabel('Total tau');
+    ylabel('Total tau'); xlabel('t (Days)');
 %     txt = {['$\mathbf{\lambda_1}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda1)...
 %         ' $\mathbf{\lambda_2}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.lambda2)],...
 %         ['$\mathbf{\beta}~=~$' num2str(output_struct.Simulations(idx).Model_Outputs.Parameters.beta)...
@@ -155,7 +155,9 @@ end
 
 if savenclose
     figstr = [simstr '_' 'sim' num2str(idx) '_' plottype];
-    print([figpath filesep figstr],'-dtiffn','-r600');
+%     print([figpath filesep figstr],'-dtiffn','-r600');
+%     exportgraphics(gcf,[figpath filesep figstr '.tif'],'Resolution',600);
+    saveas(gcf,[figpath filesep figstr],'pdf');
     close;
 end
 end
