@@ -24,9 +24,9 @@
 % 6. Selected Brainframe images
 
 %% 0. Load files, set paths, etc.
-% figpath = '~/Documents/MATLAB/Tau_Transport_OtherFiles/Figures';
-% simpath = '~/Documents/MATLAB/Tau_Transport_OtherFiles/FinalSimFiles';
-figpath = '~/Documents/MATLAB/SampleFiles'; simpath = figpath;
+figpath = '~/Documents/MATLAB/OutputFigures/Tau_Transport/Network_Transport';
+simpath = '~/Documents/MATLAB/Tau_Transport_OtherFiles/FinalSimFiles';
+% figpath = '~/Documents/MATLAB/SampleFiles'; simpath = figpath;
 loadpath = '~/Documents/MATLAB/Tau_Transport/MatFiles';
 bfpath = '~/Documents/MATLAB/Brainframe-Dev/Brainframe';
 simstr = 'hippocampome_final_round2';
@@ -51,8 +51,8 @@ end
 C = output_struct.Simulations(1).Model_Outputs.Sim.C;
 V_inv = V_inv(inds,inds);
 
-%% 1. Check mass conservation
-MassConservationPlot(simstr,loadpath,simpath,1,figpath);
+%% 1. Check that steady state matches end-timepoint tau distributions
+
 
 %% 2. Time course plots
 colind_lambda = find(ismember(output_struct.Parameter_Names,'lambda1'));
@@ -90,10 +90,21 @@ bool_plotmin = bool_plotmin == max(bool_plotmin);
 idxs_plotmin = find(bool_plotmin);
 
 %% 2.1.3 Plotting
+htmapplt = 0;
+lnplt = 1;
+savenclose = 1;
+figpathlam = [figpath filesep 'LambdaCompare'];
 for i = 1:length(idxs_plotmin)
-%     TimeCoursePlot(simstr,idxs_plot(i),'Heatmap',1,loadpath,simpath,0,figpath);
-    TimeCoursePlot(simstr,idxs_plotmax(i),'Line',0,loadpath,simpath,1,figpath);
-    TimeCoursePlot(simstr,idxs_plotmin(i),'Line',0,loadpath,simpath,1,figpath);
+    if lnplt
+        TimeCoursePlot(simstr,idxs_plotmax(i),'Line',0,loadpath,simpath,savenclose,figpathlam); %#ok<UNRCH> 
+        TimeCoursePlot(simstr,idxs_plotmax(i),'Line',1,loadpath,simpath,savenclose,figpathlam);
+        TimeCoursePlot(simstr,idxs_plotmin(i),'Line',0,loadpath,simpath,savenclose,figpathlam);
+        TimeCoursePlot(simstr,idxs_plotmin(i),'Line',1,loadpath,simpath,savenclose,figpathlam);
+    end
+    if htmapplt
+        TimeCoursePlot(simstr,idxs_plotmax(i),'Heatmap',1,loadpath,simpath,savenclose,figpathlam); %#ok<UNRCH> 
+        TimeCoursePlot(simstr,idxs_plotmin(i),'Heatmap',1,loadpath,simpath,savenclose,figpathlam);
+    end
 end
 
 %% 2.2 gamma1
@@ -121,13 +132,101 @@ bool_plotmin = bool_plotmin == max(bool_plotmin);
 idxs_plotmin = find(bool_plotmin);
 
 %% 2.2.3 Plotting
-for i = 1
-%     TimeCoursePlot(simstr,idxs_plot(i),'Heatmap',1,loadpath,simpath,0,figpath);
-    TimeCoursePlot(simstr,idxs_plotmax(i),'Line',0,loadpath,simpath,1,figpath);
-    TimeCoursePlot(simstr,idxs_plotmin(i),'Line',0,loadpath,simpath,1,figpath);
+htmapplt = 1;
+lnplt = 1;
+savenclose = 1;
+figpathgam = [figpath filesep 'Gamma1Compare'];
+for i = 1:length(idxs_plotmin)
+    if lnplt
+        TimeCoursePlot(simstr,idxs_plotmax(i),'Line',0,loadpath,simpath,savenclose,figpathgam); %#ok<UNRCH> 
+        TimeCoursePlot(simstr,idxs_plotmax(i),'Line',1,loadpath,simpath,savenclose,figpathgam);
+        TimeCoursePlot(simstr,idxs_plotmin(i),'Line',0,loadpath,simpath,savenclose,figpathgam);
+        TimeCoursePlot(simstr,idxs_plotmin(i),'Line',1,loadpath,simpath,savenclose,figpathgam);
+    end
+    if htmapplt
+        TimeCoursePlot(simstr,idxs_plotmax(i),'Heatmap',1,loadpath,simpath,savenclose,figpathgam); %#ok<UNRCH> 
+        TimeCoursePlot(simstr,idxs_plotmin(i),'Heatmap',1,loadpath,simpath,savenclose,figpathgam);
+    end
 end
 
-%% 3. Plot connectivity to/from seed region
+%% 2.3 Anterograde/Retrograde
+lambda_midvals = lambda_vals; lambda_midvals([1,length(lambda_vals)]) = [];
+gamma1_midvals = gamma1_vals; gamma1_midvals([1,length(gamma1_vals)]) = [];
+bool_midlambda = ismember(output_struct.Parameter_Grid(:,colind_lambda),lambda_midvals);
+bool_midgamma1 = ismember(output_struct.Parameter_Grid(:,colind_gamma1),gamma1_midvals);
+bool_allmids = bool_midlambda + bool_midgamma1;
+bool_allmids = bool_allmids == max(bool_allmids); 
+
+%% 2.3.1 Anterograde
+maxdelta = max(delta_vals); minepsilon = min(epsilon_vals);
+bool_maxdelta = ismember(output_struct.Parameter_Grid(:,colind_delta),maxdelta);
+bool_minepsilon = ismember(output_struct.Parameter_Grid(:,colind_epsilon),minepsilon);
+bool_plotant = bool_allmids + bool_maxdelta + bool_minepsilon;
+bool_plotant = bool_plotant == max(bool_plotant); 
+idxs_plotant = find(bool_plotant);
+
+%% 2.3.2 Retrograde
+mindelta = min(delta_vals); maxepsilon = max(epsilon_vals);
+bool_mindelta = ismember(output_struct.Parameter_Grid(:,colind_delta),mindelta);
+bool_maxepsilon = ismember(output_struct.Parameter_Grid(:,colind_epsilon),maxepsilon);
+bool_plotret = bool_allmids + bool_mindelta + bool_maxepsilon;
+bool_plotret = bool_plotret == max(bool_plotret); 
+idxs_plotret = find(bool_plotret);
+
+%% 2.3.3 Plotting
+htmapplt = 1;
+lnplt = 1;
+savenclose = 1;
+figpathantret = [figpath filesep 'AntRetCompare'];
+for i = 1:length(idxs_plotant)
+    if lnplt
+        TimeCourssePlot(simstr,idxs_plotant(i),'Line',0,loadpath,simpath,savenclose,figpathantret); %#ok<UNRCH> 
+        TimeCoursePlot(simstr,idxs_plotant(i),'Line',1,loadpath,simpath,savenclose,figpathantret);
+        TimeCoursePlot(simstr,idxs_plotret(i),'Line',0,loadpath,simpath,savenclose,figpathantret);
+        TimeCoursePlot(simstr,idxs_plotret(i),'Line',1,loadpath,simpath,savenclose,figpathantret);
+    end
+    if htmapplt
+        TimeCoursePlot(simstr,idxs_plotant(i),'Heatmap',1,loadpath,simpath,savenclose,figpathantret); %#ok<UNRCH> 
+        TimeCoursePlot(simstr,idxs_plotret(i),'Heatmap',1,loadpath,simpath,savenclose,figpathantret);
+    end
+end
+
+%% 2.3.4 Brainframe plots for anterograde
+ts = output_struct.Simulations(1).Model_Outputs.Sim.trange;
+t1_ind = 1; 
+[~,t2_ind] = min(abs(ts - (ts(end)/80)));
+[~,t3_ind] = min(abs(ts - (ts(end)/40)));
+[~,t4_ind] = min(abs(ts - (ts(end)/20)));
+[~,t5_ind] = min(abs(ts - (ts(end)/10)));
+[~,t6_ind] = min(abs(ts - (ts(end)/4)));
+t7_ind = length(ts);
+ts_inds_bf = [t1_ind,t2_ind,t3_ind,t4_ind,t5_ind,t6_ind,t7_ind];
+
+gamma1_antret = 0.004;
+lambda_antret = 0.075;
+delta_ant = 100; delta_ret = 10;
+epsilon_ant = 10; epsilon_ret = 100;
+
+lambdabool = ismember(output_struct.Parameter_Grid(:,colind_lambda),lambda_antret); 
+gamma1bool = ismember(output_struct.Parameter_Grid(:,colind_gamma1),gamma1_antret);
+deltaantbool = ismember(output_struct.Parameter_Grid(:,colind_delta),delta_ant);
+epsilonantbool = ismember(output_struct.Parameter_Grid(:,colind_epsilon),epsilon_ant);
+antind = lambdabool + gamma1bool + deltaantbool + epsilonantbool; 
+antind = find(antind == 4);
+
+wflow = 1; savenclose = 0;
+BrainframePlot(simstr,antind,ts_inds_bf,wflow,savenclose,loadpath,simpath,bfpath,figpath);
+
+%% 2.3.5 Brainframe plots for retrograde
+deltaretbool = ismember(output_struct.Parameter_Grid(:,colind_delta),delta_ret);
+epsilonretbool = ismember(output_struct.Parameter_Grid(:,colind_epsilon),epsilon_ret);
+retind = lambdabool + gamma1bool + deltaretbool + epsilonretbool; 
+retind = find(retind == 4);
+
+wflow = 1; savenclose = 0;
+BrainframePlot(simstr,retind,ts_inds_bf,wflow,savenclose,loadpath,simpath,bfpath,figpath);
+
+ %% 3. Plot connectivity to/from seed region
 SeedConnectivityPlot(simstr,1,loadpath,simpath,0,figpath);
 
 %% 4. Plot correlations w.r.t. seed connectivity
@@ -139,10 +238,10 @@ gamma2 = 0;
 delta = 10;
 epsilon = 10;
 
-%% 5. Brainframe plots
-BrainframePlot(simstr,1,150,1,0,loadpath,simpath,bfpath,figpath)
-
+%% S1. Check mass conservation
+MassConservationPlot(simstr,loadpath,simpath,1,figpath);
 %%
+
 inds = [1:24 26:30];
 ts = output_struct.Simulations(2).Model_Outputs.Sim.trange * 180;
 tot_ret = output_struct.Simulations(2).Model_Outputs.Predicted.N(inds,:) + ...
