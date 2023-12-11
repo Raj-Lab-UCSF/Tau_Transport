@@ -29,7 +29,7 @@ simpath = '~/Documents/MATLAB/Tau_Transport_OtherFiles/FinalSimFiles';
 % figpath = '~/Documents/MATLAB/SampleFiles'; simpath = figpath;
 loadpath = '~/Documents/MATLAB/Tau_Transport/MatFiles';
 bfpath = '~/Documents/MATLAB/Brainframe-Dev/Brainframe';
-simstr = 'hippocampome_final_round2';
+simstr = 'hippocampome_final_round2_v2';
 load([simpath filesep simstr '.mat'],'output_struct');
 
 load([loadpath filesep 'DefaultAtlas.mat'],'DefaultAtlas');
@@ -52,7 +52,11 @@ C = output_struct.Simulations(1).Model_Outputs.Sim.C;
 V_inv = V_inv(inds,inds);
 
 %% 1. Check that steady state matches end-timepoint tau distributions
-
+% See SingleEdgeSims.m for simulation script
+simstr_edge = 'constant_n0_L1000_fine_ant_neumann_pde_ss';
+simstr_ss = '~/Documents/Tau_Transport/SampleFiles';
+savenclose = 1;
+SteadyStatePlotter(simstr_edge,simpath_ss,savenclose,figpath);
 
 %% 2. Time course plots
 colind_lambda = find(ismember(output_struct.Parameter_Names,'lambda1'));
@@ -90,7 +94,7 @@ bool_plotmin = bool_plotmin == max(bool_plotmin);
 idxs_plotmin = find(bool_plotmin);
 
 %% 2.1.3 Plotting
-htmapplt = 0;
+htmapplt = 1;
 lnplt = 1;
 savenclose = 1;
 figpathlam = [figpath filesep 'LambdaCompare'];
@@ -180,7 +184,7 @@ savenclose = 1;
 figpathantret = [figpath filesep 'AntRetCompare'];
 for i = 1:length(idxs_plotant)
     if lnplt
-        TimeCourssePlot(simstr,idxs_plotant(i),'Line',0,loadpath,simpath,savenclose,figpathantret); %#ok<UNRCH> 
+        TimeCoursePlot(simstr,idxs_plotant(i),'Line',0,loadpath,simpath,savenclose,figpathantret); %#ok<UNRCH> 
         TimeCoursePlot(simstr,idxs_plotant(i),'Line',1,loadpath,simpath,savenclose,figpathantret);
         TimeCoursePlot(simstr,idxs_plotret(i),'Line',0,loadpath,simpath,savenclose,figpathantret);
         TimeCoursePlot(simstr,idxs_plotret(i),'Line',1,loadpath,simpath,savenclose,figpathantret);
