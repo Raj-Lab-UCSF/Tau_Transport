@@ -230,69 +230,55 @@ retind = find(retind == 4);
 wflow = 1; savenclose = 0;
 BrainframePlot(simstr,retind,ts_inds_bf,wflow,savenclose,loadpath,simpath,bfpath,figpath);
 
- %% 3. Plot connectivity to/from seed region
-SeedConnectivityPlot(simstr,1,loadpath,simpath,0,figpath);
+%% 3.1 Plot connectivity to/from seed region
+savenclose = 1;
+SeedConnectivityPlot(simstr,1,loadpath,simpath,savenclose,figpath);
 
-%% 4. Plot correlations w.r.t. seed connectivity
-lambda = 0.025;
-beta = 1e-6;
-frac = 0.92;
-gamma1 = 2e-3;
-gamma2 = 0;
-delta = 10;
-epsilon = 10;
+%% 3.2 Correlation with seed connectivity, anterograde/retrograde
+gamma1_antret = 0.004;
+lambda_antret = 0.025;
+delta_ant = 100; delta_ret = 10;
+epsilon_ant = 10; epsilon_ret = 100;
+
+lambdabool = ismember(output_struct.Parameter_Grid(:,colind_lambda),lambda_antret); 
+gamma1bool = ismember(output_struct.Parameter_Grid(:,colind_gamma1),gamma1_antret);
+deltaantbool = ismember(output_struct.Parameter_Grid(:,colind_delta),delta_ant);
+epsilonantbool = ismember(output_struct.Parameter_Grid(:,colind_epsilon),epsilon_ant);
+antind = lambdabool + gamma1bool + deltaantbool + epsilonantbool; 
+antind = find(antind == 4);
+
+deltaretbool = ismember(output_struct.Parameter_Grid(:,colind_delta),delta_ret);
+epsilonretbool = ismember(output_struct.Parameter_Grid(:,colind_epsilon),epsilon_ret);
+retind = lambdabool + gamma1bool + deltaretbool + epsilonretbool; 
+retind = find(retind == 4);
+
+savenclose = 1;
+SimulationSeedCorrelationPlot(simstr,antind,retind,loadpath,simpath,savenclose,figpath)
 
 %% S1. Check mass conservation
 MassConservationPlot(simstr,loadpath,simpath,1,figpath);
-%%
 
-inds = [1:24 26:30];
-ts = output_struct.Simulations(2).Model_Outputs.Sim.trange * 180;
-tot_ret = output_struct.Simulations(2).Model_Outputs.Predicted.N(inds,:) + ...
-    output_struct.Simulations(2).Model_Outputs.Predicted.M(inds,:);
-tot_ant = output_struct.Simulations(3).Model_Outputs.Predicted.N(inds,:) + ...
-    output_struct.Simulations(3).Model_Outputs.Predicted.M(inds,:);
-corrs_ret_Co = corr(Co,tot_ret);
-corrs_ret_Ci = corr(Ci,tot_ret);
-corrs_ant_Co = corr(Co,tot_ant);
-corrs_ant_Ci = corr(Ci,tot_ant);
+%% Misc.
+% params = output_struct.Parameter_Grid;
+% params_ret = params((params(:,7) < params(:,8)),:);
+% params_ant = params((params(:,7) > params(:,8)),:);
+% retinds = find((params(:,7) < params(:,8)));
+% antinds = find((params(:,7) > params(:,8)));
+% cmap = lines(size(params_ret,1));
+% leg = cell(1,size(params_ret,1));
+% figure('Position',[0,0,600,600]); hold on;
+% for i = 1:size(params_ret,1)
+%     tot_ret = output_struct.Simulations(retinds(i)).Model_Outputs.Predicted.N(inds,:) + ...
+%         output_struct.Simulations(retinds(i)).Model_Outputs.Predicted.M(inds,:);
+%     tot_ant = output_struct.Simulations(antinds(i)).Model_Outputs.Predicted.N(inds,:) + ...
+%         output_struct.Simulations(antinds(i)).Model_Outputs.Predicted.M(inds,:);
+%     corrs = corr(tot_ret,tot_ant); corrs = diag(corrs);
+%     plot(ts,corrs,'LineWidth',3,'Color',cmap(i,:))
+%     leg{i} = ['$\gamma$ = ',num2str(params_ret(i,2),'%.2d')];
+% end
+% xlabel('Time (Days)'); ylabel("Pearson's R, Ant vs. Ret");
+% legend(leg,'Location','northeast','Interpreter','latex');
+% set(gca,'FontSize',16,'FontName','Times');
 
-
-figure('Position',[0,0,1000,600]); 
-subplot(1,2,1); hold on;
-plot(ts,corrs_ant_Ci,'LineWidth',3,'Color','red');
-plot(ts,corrs_ant_Co,'LineWidth',3,'Color','blue');
-xlabel('Time Days'); ylabel("Pearson's R with C");
-legend({'C_i_n, seed','C_o_u_t, seed'},'Location','northeast');
-title('Ant, small gamma Simulation');
-set(gca,'FontSize',16,'FontName','Times')
-subplot(1,2,2); hold on;
-plot(ts,corrs_ret_Ci,'LineWidth',3,'Color','red');
-plot(ts,corrs_ret_Co,'LineWidth',3,'Color','blue');
-xlabel('Time Days'); ylabel("Pearson's R with C");
-legend({'C_i_n, seed','C_o_u_t, seed'},'Location','northeast');
-title('Ret small gamma Simulation');
-set(gca,'FontSize',16,'FontName','Times')
-
-params = output_struct.Parameter_Grid;
-params_ret = params((params(:,7) < params(:,8)),:);
-params_ant = params((params(:,7) > params(:,8)),:);
-retinds = find((params(:,7) < params(:,8)));
-antinds = find((params(:,7) > params(:,8)));
-cmap = lines(size(params_ret,1));
-leg = cell(1,size(params_ret,1));
-figure('Position',[0,0,600,600]); hold on;
-for i = 1:size(params_ret,1)
-    tot_ret = output_struct.Simulations(retinds(i)).Model_Outputs.Predicted.N(inds,:) + ...
-        output_struct.Simulations(retinds(i)).Model_Outputs.Predicted.M(inds,:);
-    tot_ant = output_struct.Simulations(antinds(i)).Model_Outputs.Predicted.N(inds,:) + ...
-        output_struct.Simulations(antinds(i)).Model_Outputs.Predicted.M(inds,:);
-    corrs = corr(tot_ret,tot_ant); corrs = diag(corrs);
-    plot(ts,corrs,'LineWidth',3,'Color',cmap(i,:))
-    leg{i} = ['$\gamma$ = ',num2str(params_ret(i,2),'%.2d')];
-end
-xlabel('Time (Days)'); ylabel("Pearson's R, Ant vs. Ret");
-legend(leg,'Location','northeast','Interpreter','latex');
-set(gca,'FontSize',16,'FontName','Times')
 
  
