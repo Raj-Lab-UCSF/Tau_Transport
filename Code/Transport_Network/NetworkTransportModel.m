@@ -97,10 +97,10 @@ if ~isempty(ip.Results.init_path)
     end
 elseif isnan(mousedata_struct.(ip.Results.study).seed)
     init_path = logical(mousedata_struct.(ip.Results.study).data(:,1));
-    init_path = DataToCCF(init_path,ip.Results.study,matdir);
+    init_path = DataToCCF_Transport(init_path,ip.Results.study,matdir);
 else
     init_path = logical(mousedata_struct.(ip.Results.study).seed);
-    init_path = DataToCCF(init_path,ip.Results.study,matdir);
+    init_path = DataToCCF_Transport(init_path,ip.Results.study,matdir);
 end
 beta_new = ip.Results.beta * ip.Results.time_scale;
 gamma1_new = ip.Results.gamma1 * ip.Results.time_scale;
