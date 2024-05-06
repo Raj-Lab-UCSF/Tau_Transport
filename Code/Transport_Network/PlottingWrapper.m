@@ -197,17 +197,19 @@ end
 
 %% 2.3.4 Brainframe plots for anterograde
 ts = output_struct.Simulations(1).Model_Outputs.Sim.trange;
-t1_ind = 1; 
-[~,t2_ind] = min(abs(ts - (ts(end)/80)));
-[~,t3_ind] = min(abs(ts - (ts(end)/40)));
-[~,t4_ind] = min(abs(ts - (ts(end)/20)));
-[~,t5_ind] = min(abs(ts - (ts(end)/10)));
-[~,t6_ind] = min(abs(ts - (ts(end)/4)));
-t7_ind = length(ts);
-ts_inds_bf = [t1_ind,t2_ind,t3_ind,t4_ind,t5_ind,t6_ind,t7_ind];
+ts_intervals = [Inf,10,2.5,1]; % define the subdivisions of maximum t to plot
+ts_inds_bf = zeros(1,length(ts_intervals));
+for i = 1:length(ts_inds_bf)
+    if ts_intervals(i) == Inf
+        ts_inds_bf(i) = 1;
+    else
+        [~,t_ind] = min(abs(ts - (ts(end)/ts_intervals(i))));
+        ts_inds_bf(i) = t_ind;
+    end
+end
 
 gamma1_antret = 0.004;
-lambda_antret = 0.075;
+lambda_antret = 0.025;
 delta_ant = 100; delta_ret = 10;
 epsilon_ant = 10; epsilon_ret = 100;
 
@@ -218,7 +220,7 @@ epsilonantbool = ismember(output_struct.Parameter_Grid(:,colind_epsilon),epsilon
 antind = lambdabool + gamma1bool + deltaantbool + epsilonantbool; 
 antind = find(antind == 4);
 
-wflow = 1; savenclose = 0;
+wflow = 1; savenclose = 1;
 BrainframePlot(simstr,antind,ts_inds_bf,wflow,savenclose,loadpath,simpath,bfpath,figpath);
 
 %% 2.3.5 Brainframe plots for retrograde
@@ -227,7 +229,7 @@ epsilonretbool = ismember(output_struct.Parameter_Grid(:,colind_epsilon),epsilon
 retind = lambdabool + gamma1bool + deltaretbool + epsilonretbool; 
 retind = find(retind == 4);
 
-wflow = 1; savenclose = 0;
+wflow = 1; savenclose = 1;
 BrainframePlot(simstr,retind,ts_inds_bf,wflow,savenclose,loadpath,simpath,bfpath,figpath);
 
 %% 3.1 Plot connectivity to/from seed region
@@ -252,7 +254,7 @@ epsilonretbool = ismember(output_struct.Parameter_Grid(:,colind_epsilon),epsilon
 retind = lambdabool + gamma1bool + deltaretbool + epsilonretbool; 
 retind = find(retind == 4);
 
-savenclose = 1;
+savenclose = 0;
 SimulationSeedCorrelationPlot(simstr,antind,retind,loadpath,simpath,savenclose,figpath)
 
 %% S1. Check mass conservation

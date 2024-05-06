@@ -97,33 +97,42 @@ corrs_ant_Ci = corr(C_in,X_ant);
 corrs_ret_Co = corr(C_out,X_ret);
 corrs_ret_Ci = corr(C_in,X_ret);
 
-figure('Position',[0,0,900,450]); 
-tiledlayout(1,2,"TileSpacing","compact");
+figure('Position',[0,0,450,900]); 
+tiledlayout(2,1,"TileSpacing","compact");
 nexttile; hold on;
 plot(ts,corrs_ant_Ci,'LineWidth',3,'Color','red');
 plot(ts,corrs_ant_Co,'LineWidth',3,'Color','blue');
-xlabel('t (Days)'); ylabel("Pearson's R");
+ylabel("Pearson's R");
 xmin = 0; xmax = ts(end); xlim([xmin, xmax]);
 xticks([xmin, (xmin+xmax)/2, xmax]);
-yticklabels({num2str(xmin), num2str((xmin+xmax)/2), num2str(xmax)})
-ymin = 0.9*min([min(corrs_ant_Ci) min(corrs_ret_Ci) min(corrs_ant_Co) min(corrs_ret_Co)]);
-ymax = 1;
+xticklabels({})
+ymin = 0.9*min([min(corrs_ant_Ci) min(corrs_ant_Co)]);
+ymax = 1.15*max([max(corrs_ant_Ci) max(corrs_ant_Co)]);
 ylim([ymin, ymax]); yticks([ymin, (ymin+ymax)/2, ymax]);
-yticklabels({num2str(ymin,'%.2f'), num2str((ymin+ymax)/2,'%.2f'), num2str(ymax)})
-legend({'C_i_n, LH ECl','C_o_u_t, LH ECl'},'Location','northeast');
+yticklabels({num2str(ymin,'%.2f'), num2str((ymin+ymax)/2,'%.2f'), num2str(ymax,'%.2f')})
+legend({'C_i_n','C_o_u_t'},'Location','northeast');
 title('Anterograde Condition');
-set(gca,'FontSize',24,'FontName','Times')
+set(gca,'FontSize',24,'FontName','Times','box','on')
 
 nexttile; hold on;
 plot(ts,corrs_ret_Ci,'LineWidth',3,'Color','red');
 plot(ts,corrs_ret_Co,'LineWidth',3,'Color','blue');
-xlabel('t (Days)'); 
+xlabel('t (Days)'); xlim([xmin, xmax]); 
+ylabel("Pearson's R");
 xticks([xmin, (xmin+xmax)/2, xmax]);
-yticklabels({num2str(xmin), num2str((xmin+xmax)/2), num2str(xmax)})
+xticklabels({num2str(xmin), num2str((xmin+xmax)/2), num2str(xmax)})
+ymin = 0.9*min([min(corrs_ret_Ci) min(corrs_ret_Co)]);
+ymax = 1.05*max([max(corrs_ret_Ci) max(corrs_ret_Co)]);
 ylim([ymin, ymax]); yticks([ymin, (ymin+ymax)/2, ymax]);
-yticklabels([])
+yticklabels({num2str(ymin,'%.2f'), num2str((ymin+ymax)/2,'%.2f'), num2str(ymax,'%.2f')})
 title('Retrograde Condition');
-set(gca,'FontSize',24,'FontName','Times')
+set(gca,'FontSize',24,'FontName','Times','box','on')
+
+
+for i = 1:length(X_ret)
+    Rs(i) = corr(N_ret(:,i) + M_ret(:,i), N_ant(:,i)+M_ant(:,i));
+end
+Rs
 
 if savenclose
     figstr = [simstr '_' 'sims' num2str(idxant) '_' num2str(idxret) '_' 'SeedConnCorrs'];

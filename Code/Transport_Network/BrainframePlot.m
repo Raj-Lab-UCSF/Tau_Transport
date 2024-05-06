@@ -28,8 +28,8 @@ X = DataToCCF_Transport(X,regs,1,loadpath_);
 X_plot = X;
 X_plot(isnan(X_plot)) = 0;
 X_plot = X_plot / max(X(:));
-X_plot(X_plot < 0.25*median(nonzeros(X_plot(:)))) = 0;
-X_plot = X_plot .^ (1/3); 
+% X_plot(X_plot < 0.25*median(nonzeros(X_plot(:)))) = 0;
+X_plot = X_plot .^ (1/2); 
 if wflow
     C = output_struct.Simulations(simno).Model_Outputs.Sim.C;
     F = output_struct.Simulations(simno).Model_Outputs.Predicted.F(:,:,tpts);
@@ -43,24 +43,33 @@ seedreg = DataToCCF_Transport(output_struct.Simulations(simno).Model_Outputs.Sim
 seedreg(isnan(seedreg)) = 0; seedreg = logical(seedreg);
 
 % Chunk of code to define region_groups
-reggroups = zeros(213,1); 
-amy = 1:11; cer = 12:23; sub = 24:26; hip = 27:37; hyp = 38:57;
-ncx = 58:95; med = 96:120; mid = 121:141; olf = 142:149; pal = 150:157;
-pon = 158:170; str = 171:178; tha = 179:213;
-reggroups(amy) = 1; reggroups(cer) = 2; reggroups(sub) = 3; 
-reggroups(hip) = 4; reggroups(hyp) = 5; reggroups(ncx) = 6;
-reggroups(med) = 7; reggroups(mid) = 8; reggroups(olf) = 9;
-reggroups(pal) = 10; reggroups(pon) = 11; reggroups(str) = 12;
-reggroups(tha) = 13; 
-reggroups = [reggroups;reggroups];
-reggroups(seedreg) = 14;
-reggroups_conn = reggroups;
-cmap = lines(length(unique(reggroups))-1); %Creating colormap
-cmap = [cmap; [0 1 0.5]];
-imgview = [-1 0 0];
+% reggroups = zeros(213,1); 
+% amy = 1:11; cer = 12:23; sub = 24:26; hip = 27:37; hyp = 38:57;
+% ncx = 58:95; med = 96:120; mid = 121:141; olf = 142:149; pal = 150:157;
+% pon = 158:170; str = 171:178; tha = 179:213;
+% reggroups(amy) = 1; reggroups(cer) = 2; reggroups(sub) = 3; 
+% reggroups(hip) = 4; reggroups(hyp) = 5; reggroups(ncx) = 6;
+% reggroups(med) = 7; reggroups(mid) = 8; reggroups(olf) = 9;
+% reggroups(pal) = 10; reggroups(pon) = 11; reggroups(str) = 12;
+% reggroups(tha) = 13; 
+% reggroups = [reggroups;reggroups];
+% reggroups(seedreg) = 14;
+% reggroups_conn = reggroups;
+% cmap = lines(length(unique(reggroups))-1); %Creating colormap
+% cmap = [cmap; [0 1 0.5]];
+
+cmap = [[0 0 1]; [1 0 1]; [0 1 0.25]];
+% imgview = [-80.3682,7.1201];
+imgview = [-0.7 -1.4 -0.5];
 for i = 1:length(ts)
     imglabel = sprintf([simstr '_' num2str(simno) '_t%d'],tpts(i));
     X_plot_i = X_plot(:,i);
+    reggroups = ones(426,1); 
+    [~,inds_X_sort] = sort(X_plot_i,'descend');
+    inds_X_sort(inds_X_sort == find(seedreg)) = [];
+    reggroups(inds_X_sort(1:3)) = 2;
+    reggroups(seedreg) = 3;
+    reggroups_conn = reggroups;
     if wflow
         F_plot_i = squeeze(F_plot(:,:,i));
         F_plot_net = zeros(size(F_plot_i));
@@ -77,13 +86,13 @@ for i = 1:length(ts)
             end
         end
         F_plot_i = F_plot_net;
-        F_plot_i(F_plot_i < prctile(nonzeros(F_plot_i(:)),95)) = 0;
+        F_plot_i(F_plot_i < prctile(nonzeros(F_plot_i(:)),90)) = 0;
         input_struct = brainframe_inputs_mouse(bfpath_,'conmat',F_plot_i,...
                                                      'region_groups',reggroups,...
                                                      'con_regiongroups',reggroups_conn,...
                                                      'cmap',cmap,...
                                                      'con_cmap',cmap,...
-                                                     'xfac',4,...
+                                                     'xfac',6,...
                                                      'sphere',1,...
                                                      'sphere_npts',20,...
                                                      'pointsize',5,...

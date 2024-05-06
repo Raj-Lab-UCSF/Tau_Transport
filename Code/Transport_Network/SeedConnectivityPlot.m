@@ -96,19 +96,21 @@ C_out = C_out/max([outmax,inmax]);
 C_in = C_in/max([outmax,inmax]);
 regnames(initpath > 0) = [];
 
+cmap_ = [[ones(650,1), linspace(1,0.5,650).', linspace(1,0,650).'];...
+        [ones(350,1), linspace(0.5,0,350).', 0*ones(350,1)]];
 figure('Position',[0,0,600,800]); 
-tiledlayout(1,2); nexttile;
-imagesc(C_out, [0 1]); colormap('hot');
+tiledlayout(1,2,'TileSpacing','compact'); nexttile;
+imagesc(C_out, [0 1]); colormap(cmap_);
 set(gca,'TickLength',[0 0],'XTickLabel',{},...
     'YTick',1:length(regnames),'YTickLabel',regnames,...
     'TickLabelInterpreter','tex','FontName','Times','FontSize',20)
-title('Out');
+title('C_o_u_t');
 
 nexttile;
-imagesc(C_in,[0 1]); colormap('hot'); colorbar;
+imagesc(C_in,[0 1]); colormap(cmap_); colorbar;
 set(gca,'TickLength',[0 0],'XTickLabel',{},'YTickLabel',{},...
     'TickLabelInterpreter','tex','FontName','Times','FontSize',20)
-title('In');
+title('C_i_n');
 
 if savenclose
     figstr = [simstr '_' 'sim' num2str(idx) '_' 'Connectivity'];
