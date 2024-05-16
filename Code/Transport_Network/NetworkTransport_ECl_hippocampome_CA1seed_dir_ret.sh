@@ -8,7 +8,7 @@
 #### Error file
 #$ -e /wynton/protected/home/rajlab/jtorok/JobOutputs/$JOB_NAME_$JOB_ID.out
 #### number of cores
-#$ -pe smp 27
+#$ -pe smp 16
 #### Specify queue
 #$ -q long.q
 #### memory per core
@@ -17,4 +17,4 @@
 #$ -l h_rt=150:00:00
 
 module load matlab
-matlab -batch "NetworkTransport_ECl_hippocampome_final_lambda_3"
+matlab -batch "NetworkTransport_ECl_hippocampome_CA1seed_dir_ret"

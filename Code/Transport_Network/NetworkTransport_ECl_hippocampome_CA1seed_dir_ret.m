@@ -11,7 +11,7 @@ loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'hippocampome_final_lambda_6'; % for saving the outputs
+simstr = 'hippocampome_CA1seed_dir_ret'; % for saving the outputs
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
@@ -21,13 +21,13 @@ paramnames = {'beta','gamma1','gamma2','frac','lambda1','lambda2',...
     'delta','epsilon'};
 inputparams(1,:) = paramnames;
 inputparams{2,1} = 1e-6; % beta
-inputparams{2,2} = [2e-3,4e-3,8e-3]; % gamma1
+inputparams{2,2} = [1e-3,2e-3,4e-3,8e-3]; % gamma1
 inputparams{2,3} = 0; % gamma2
 inputparams{2,4} = 0.92; % frac
-inputparams{2,5} = 0.025; % lambda1
-inputparams{2,6} = 0.025; % lambda2
-inputparams{2,7} = [1,10,100]; % delta
-inputparams{2,8} = [1,10,100]; % epsilon
+inputparams{2,5} = [0.05,0.075]; % lambda1
+inputparams{2,6} = [0.05,0.075]; % lambda2
+inputparams{2,7} = 10; % delta
+inputparams{2,8} = 100; % epsilon
 
 % 2b. Create parameter array to grid search using allcomb()
 paramgrid = allcomb(inputparams{2,1},...
@@ -48,7 +48,7 @@ L_ais = 40; % default = 40
 L_syn = 40; % default = 40
 T = []; % default = 0.05
 dt = []; % default = 0.005
-trange = [0:0.005:0.2, 0.21:0.01:0.5, 0.525:0.025:1];
+trange = [0:0.0025:0.1, 0.105:0.005:0.3, 0.31:0.01:1];
 resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 plotting = 0;
 reltol = 1e-4;
@@ -58,7 +58,7 @@ init_rescale = 0.02;
 init_path = {'Entorhinal area, lateral part_L'};
 study = 'Hurtado';
 connectome_subset = 'Hippocampus+PC+RSP';
-ncores = 27;
+ncores = 16;
 
 %% 3. Run NetworkTransportModel
 output_struct = struct;
@@ -96,7 +96,8 @@ parfor i = 1:size(paramgrid,1)
                                 'init_rescale',init_rescale,...
                                 'init_path',init_path,...
                                 'study',study,...
-                                'connectome_subset',connectome_subset);
+                                'connectome_subset',connectome_subset,...
+                                'sim_no',i);
     sim_struct(i).Model_Outputs = mdloutput;
 end
 output_struct.Simulations = sim_struct;

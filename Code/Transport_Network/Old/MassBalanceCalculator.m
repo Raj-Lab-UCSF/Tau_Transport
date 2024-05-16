@@ -195,17 +195,14 @@ end
 nroi = size(Adj,1);
 W_1_flux = zeros(nroi);
 W_2_flux = zeros(nroi);
-% A_0 = [0;0];
-% B_0 = [0;0];
-A_0=[0];
-B_0=[0];
-[W_1_0,W_0_1]=Q_calculation(A_0,B_0);
-% V_0_0 = [1;0];
-% V_L_0_0 = [0;1];
-% g_0_0 = [0;0];
-% q_flux_0_0 = @(W)f_q_ss(W,A_0,B_0,V_0_0,V_L_0_0);
-% options = optimset('TolFun',1e-06,'Display','off');
-% W_1_0 = fsolve(q_flux_0_0,g_0_0,options);
+A_0 = [0;0];
+B_0 = [0;0];
+V_0_0 = [1;0];
+V_L_0_0 = [0;1];
+g_0_0 = [0;0];
+q_flux_0_0 = @(W)f_q_ss(W,A_0,B_0,V_0_0,V_L_0_0);
+options = optimset('TolFun',1e-06,'Display','off');
+W_1_0 = fsolve(q_flux_0_0,g_0_0,options);
 
 for j = 1:nroi
     Ad_in = logical(Adj(:,j));
@@ -215,27 +212,24 @@ for j = 1:nroi
     i_app_0 = logical((tau_x0(:,j)+C_1==0).*(Ad_in));
     i_len = ones(nroi,1);
     i_app_00 = i_len(i_app_0,1);
-    W_1_flux(i_app_0,j)=W_1_0*i_app_00 ;  
-    W_2_flux(i_app_0,j)=W_0_1*i_app_00;
-%     W_1_flux(i_app_0,j) = W_1_0(1)*i_app_00 ;  % ones(length(i_app_00),1);
-%     W_2_flux(i_app_0,j) = W_1_0(2)*i_app_00;  % ones(length(i_app_00),1);
+    W_1_flux(i_app_0,j) = W_1_0(1)*i_app_00 ;  % ones(length(i_app_00),1);
+    W_2_flux(i_app_0,j) = W_1_0(2)*i_app_00;  % ones(length(i_app_00),1);
     i_app = logical(((tau_x0(:,j)>0)+(C_1>0)).*(Ad_in));
     B_1 = tau_x0(i_app,j);
     
     if ~isempty(B_1)>0
         A_1 = network_flux(i_app,j);
-       [W_1_flux(i_app,j), W_2_flux(i_app,j)]=Q_calculation(A_1,B_1);
-%         V0_1_1 = ones(size(B_1));
-%         V0_1_2 = zeros(size(B_1));
-%         V_L_1_1 = zeros(size(B_1));
-%         V_L_1_2 = ones(size(B_1));
-%         q_flux_1 = @(W)f_q_ss(W,A_1,B_1,V0_1_1,V_L_1_1);
-%         q_flux_2 = @(W)f_q_ss(W,A_1,B_1,V0_1_2,V_L_1_2);
-%         g0_1 = zeros(length(V0_1_1),1);
-%         g0_2 = zeros(length(V0_1_1),1);
-%         options = optimset('TolFun',1e-06,'Display','off');
-%         W_1_flux(i_app,j) = fsolve(q_flux_1,g0_1,options);
-%         W_2_flux(i_app,j) = fsolve(q_flux_2,g0_2,options);
+        V0_1_1 = ones(size(B_1));
+        V0_1_2 = zeros(size(B_1));
+        V_L_1_1 = zeros(size(B_1));
+        V_L_1_2 = ones(size(B_1));
+        q_flux_1 = @(W)f_q_ss(W,A_1,B_1,V0_1_1,V_L_1_1);
+        q_flux_2 = @(W)f_q_ss(W,A_1,B_1,V0_1_2,V_L_1_2);
+        g0_1 = zeros(length(V0_1_1),1);
+        g0_2 = zeros(length(V0_1_1),1);
+        options = optimset('TolFun',1e-06,'Display','off');
+        W_1_flux(i_app,j) = fsolve(q_flux_1,g0_1,options);
+        W_2_flux(i_app,j) = fsolve(q_flux_2,g0_2,options);
     end
 end
 network_flux_vec = network_flux(:);
@@ -286,53 +280,6 @@ R_ss_int = V_ss_int(nroi*nroi+1:2*nroi*nroi);
 R_ss = reshape(R_ss_int,nroi,nroi);
 
 % % % 6. Functions
-     function F=fun_F_n_axon(x,n)
-              F=-1/diff_n*((1-ip.Results.frac)...
-            ./ip.Results.frac).*(v_a+2*v_a*ip.Results.delta.*n-...
-            (3*v_a*beta_new.*gamma1_new.*ip.Results.epsilon.*n.^2-2*v_a*...
-            gamma1_new.*ip.Results.epsilon.*gamma2_new.*n.^3)...
-            ./(beta_new-gamma2_new.*n).^2-(4*v_a*ip.Results.delta.*beta_new...
-            .*gamma1_new.*ip.Results.epsilon.*n.^3-3*v_a*ip.Results.delta.*...
-            gamma1_new.*gamma2_new.*ip.Results.epsilon.*n.^4)...
-            ./(beta_new-gamma2_new.*n).^2-v_r);
-     %this is F_n/a(x)
-     end
-  
-    
-    
-    
-    
-    function [Q_10, Q_01]=Q_calculation(A,B)
-             % n=@(x)n_ss_axon(A,B,x);
-            n_mesh=n_ss_axon(A,B,xmesh_axon);
-           F=fun_F_n_axon(xmesh_axon,n_mesh);
-  
-        int_num=trapz(xmesh_axon,F,2);
-        Q_num=exp(int_num);
-  %int=xmesh_axon;
-  Q_den_sd=1/diff_n*x1;
-  % Q_den_sd=1/diff_n*(x1-x0);
-  Q_den_ais=1/(ip.Results.lambda1*diff_n)*(x2-x1);
-  int_den_1=zeros(length(B),length(xmesh_axon));
-  for i=2:length(xmesh_axon)
-       n_mesh_1=n_ss_axon(A,B,xmesh_axon(1:i));
-      F1=fun_F_n_axon(xmesh_axon(1:i),n_mesh_1);
-      int_den_1(:,i)=trapz(xmesh_axon(1:i),F1, 2);
-
-  end
-   Q_den_axon=trapz(xmesh_axon,exp(int_den_1),2);
-  Q_den_axon=1/(ip.Results.frac.*diff_n).*Q_den_axon;
-  Q_den_syn_cleft=1/(ip.Results.lambda2*diff_n)*(x4-x3)*Q_num;
-  Q_den_sd_postsyn=1/(diff_n)*(x5-x4)*Q_num;
- Q_den=Q_den_sd+Q_den_ais+Q_den_axon+Q_den_syn_cleft+Q_den_sd_postsyn;
- Q_01=-(Q_num./Q_den); %.*ones(1,length(B_1))
- Q_10=(1./Q_den);
-
-end
-
-
-
-
 
     function nprime=ode_ss_n(x,A,n,D) %#ok<INUSD> 
         nprime = 1/D*-A;
@@ -340,8 +287,6 @@ end
 
     function qprime=ode_q_axon(x,W,q,A_1,B_1) 
         n = n_ss_axon(A_1,B_1,x);
-        F=fun_F_n_axon(x,n);
-        qprime= 1/diff_n*-W/ip.Results.frac-F.*q;
 %         qprime = 1/diff_n*-W/ip.Results.frac+1/diff_n*((1-ip.Results.frac)./...
 %             ip.Results.frac).*q.*(v_a+2*v_a*ip.Results.delta.*n-...
 %             (3*v_a*beta_new.*gamma1_new.*ip.Results.epsilon.*...
@@ -350,15 +295,14 @@ end
 %             beta_new.*gamma1_new.*ip.Results.epsilon.*n.^3-3*...
 %             v_a*ip.Results.delta.*gamma1_new.*ip.Results.gamma2.*...
 %             ip.Results.epsilon.*n.^4)./(beta_new-ip.Results.gamma2.*n).^2-v_r);
-%         qprime = 1/diff_n*-W/ip.Results.frac+1/diff_n*((1-ip.Results.frac)...
-%             ./ip.Results.frac).*q.*(v_a+2*v_a*ip.Results.delta.*n-...
-%             (3*v_a*beta_new.*gamma1_new.*ip.Results.epsilon.*n.^2-2*v_a*...
-%             gamma1_new.*ip.Results.epsilon.*gamma2_new.*n.^3)...
-%             ./(beta_new-gamma2_new.*n).^2-(4*v_a*ip.Results.delta.*beta_new...
-%             .*gamma1_new.*ip.Results.epsilon.*n.^3-3*v_a*ip.Results.delta.*...
-%             gamma1_new.*gamma2_new.*ip.Results.epsilon.*n.^4)...
-%             ./(beta_new-gamma2_new.*n).^2-v_r);
-        
+        qprime = 1/diff_n*-W/ip.Results.frac+1/diff_n*((1-ip.Results.frac)...
+            ./ip.Results.frac).*q.*(v_a+2*v_a*ip.Results.delta.*n-...
+            (3*v_a*beta_new.*gamma1_new.*ip.Results.epsilon.*n.^2-2*v_a*...
+            gamma1_new.*ip.Results.epsilon.*gamma2_new.*n.^3)...
+            ./(beta_new-gamma2_new.*n).^2-(4*v_a*ip.Results.delta.*beta_new...
+            .*gamma1_new.*ip.Results.epsilon.*n.^3-3*v_a*ip.Results.delta.*...
+            gamma1_new.*gamma2_new.*ip.Results.epsilon.*n.^4)...
+            ./(beta_new-gamma2_new.*n).^2-v_r);
     end
 
     function nprime=ode_ss_axon(x,A,n) %#ok<INUSD> 
