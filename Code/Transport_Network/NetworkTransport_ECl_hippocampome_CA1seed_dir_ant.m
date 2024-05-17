@@ -26,8 +26,8 @@ inputparams{2,3} = 0; % gamma2
 inputparams{2,4} = 0.92; % frac
 inputparams{2,5} = [0.05,0.075]; % lambda1
 inputparams{2,6} = [0.05,0.075]; % lambda2
-inputparams{2,7} = 10; % delta
-inputparams{2,8} = 100; % epsilon
+inputparams{2,7} = 100; % delta
+inputparams{2,8} = 10; % epsilon
 
 % 2b. Create parameter array to grid search using allcomb()
 paramgrid = allcomb(inputparams{2,1},...
