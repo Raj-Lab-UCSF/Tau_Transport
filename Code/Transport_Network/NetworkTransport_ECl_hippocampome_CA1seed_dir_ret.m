@@ -23,10 +23,10 @@ inputparams(1,:) = paramnames;
 inputparams{2,1} = 1e-6; % beta
 inputparams{2,2} = [1e-3,2e-3,4e-3,8e-3]; % gamma1
 inputparams{2,3} = 0; % gamma2
-inputparams{2,4} = 0.92; % frac
-inputparams{2,5} = [0.05,0.075]; % lambda1
-inputparams{2,6} = [0.05,0.075]; % lambda2
-inputparams{2,7} = 10; % delta
+inputparams{2,4} = [0.5,0.75]; % frac
+inputparams{2,5} = 0.05; % lambda1
+inputparams{2,6} = 0.05; % lambda2
+inputparams{2,7} = [1,10]; % delta
 inputparams{2,8} = 100; % epsilon
 
 % 2b. Create parameter array to grid search using allcomb()
