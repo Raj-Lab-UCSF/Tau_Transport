@@ -57,7 +57,7 @@ fsolvetol = 1e-6;
 init_rescale = 0.2;
 init_path = {'Field CA1_L'};
 study = 'DS9';
-connectome_subset = 'All';
+connectome_subset = 'LH';
 ncores = 16;
 
 %% 3. Run NetworkTransportModel
