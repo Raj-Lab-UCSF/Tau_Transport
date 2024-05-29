@@ -58,7 +58,7 @@ init_rescale = 0.2;
 init_path = {'Field CA1_L'};
 study = 'DS9';
 connectome_subset = 'LH';
-conn_thresh = 2;
+conn_thresh = 0.8;
 ncores = 16;
 
 %% 3. Run NetworkTransportModel
