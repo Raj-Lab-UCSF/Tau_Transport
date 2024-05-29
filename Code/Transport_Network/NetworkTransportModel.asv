@@ -227,15 +227,14 @@ for h = 1:(nt-1)
 %         diag((Conn*F_out)))*ip.Results.dt); 
     N(:,h+1) = N(:,h)+(1./(Vol.*(1+m_t)+v_1+v_2)).*((diag((Conn.'*F_in)) - ...
         diag((Conn*F_out)))*(t(h+1)-t(h))); 
-    if any(N(:) < 0)
-        % fprintf('Found negative N in Simulation %d!\n',ip.Results.sim_no)
-        % fprintf('Min. negative val. = %.2d\n',min(N(:,h+1)))
-        % minposN = min(nonzeros(N(:,h+1)));
-        % fprintf('min(nonzero N)/min(all N) = %.2d\n',abs(min(N(:,h+1)))/minposN)
-        N(N < 0) = eps; % negative values are due to numerical instabilities - for now set them to eps if they occur
-    end
     % ((diag((Conn.'*F_in)) - diag((Conn*F_out)))*k + beta*m(:,h)*k-gamma1*(n(:,h).*n(:,h))*k-gamma2*(n(:,h).*m(:,h))*k);
     N_adj_h1 = N(:,h+1).*Adj;
+    if any(N(:) < 0)
+        fprintf('Found negative N in Simulation %d!\n',ip.Results.sim_no)
+        fprintf('Min. negative val. = %.2d\n',min(N(:,h+1)))
+        minposN = min(nonzeros(N(:,h+1)));
+        fprintf('Max/min = %.2d\n',abs(minposN/max(N(:,h+1)))
+    end
 %     Gamma_h = ip.Results.beta * m(:,h) * ip.Results.dt - ...
 %         ip.Results.gamma1 * (n(:,h).*n(:,h) + n(:,h).*m(:,h)) * ip.Results.dt;
 %     n(:,h+1) = n(:,h) + (diag((Conn.' * F_in)) - diag((Conn * F_out))) * ip.Results.dt...

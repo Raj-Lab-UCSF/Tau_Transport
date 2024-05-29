@@ -1,12 +1,9 @@
 % Wrapper script for generating output files for NetworkTransportModel for
 % generating tau distributions on the network
-%
-% Should be used for local testing/debugging - long jobs need to be sent to
-% a computing cluster
 
 %% 1. Define directories for saving outputs
 clear; clc;
-curpath = '/Users/justintorok/Documents/MATLAB/Tau_Transport'; % Change to local Tau_Transport directory
+curpath = '/Users/justintorok/Documents/MATLAB/Tau_Transport';
 p = genpath(curpath);
 addpath(p);
 simpath = [curpath filesep 'SampleFiles'];
@@ -14,7 +11,7 @@ loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'LH_ret_debug'; % for saving the outputs
+simstr = 'hippocampome_test_explWfun'; % for saving the outputs
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
@@ -61,7 +58,7 @@ init_rescale = 2;
 init_path = {'Field CA1_L'};
 study = 'DS9';
 connectome_subset = 'LH';
-conn_thresh = 0.8;
+conn_thresh = 2;
 % ncores = 64;
 
 %% 3. Run NetworkTransportModel
@@ -109,6 +106,8 @@ end
 output_struct.Simulations = sim_struct;
 % delete(gcp('nocreate'));
 toc
+
+% testplot
 
 %% 4. Save output file
 save([simpath filesep simstr '.mat'],'output_struct') 
