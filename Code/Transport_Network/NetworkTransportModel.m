@@ -32,6 +32,7 @@ connectome_subset_ = 'Hippocampus';
 time_scale_ = 1;
 len_scale_ = 1e-3;
 sim_no_ = 1;
+conn_thresh_ = 'default';
 
 ip = inputParser;
 % validChar = @(x) ischar(x);
@@ -57,6 +58,7 @@ addParameter(ip, 'fsolvetol', fsolvetol_, validScalar);
 addParameter(ip, 'connectome_subset', connectome_subset_);
 addParameter(ip, 'len_scale', len_scale_, validScalar);
 addParameter(ip, 'time_scale', time_scale_, validScalar);
+addParameter(ip, 'conn_thresh', conn_thresh_);
 
 addParameter(ip, 'study', study_);
 addParameter(ip, 'init_rescale', init_rescale_, validScalar);
@@ -73,12 +75,15 @@ load([matdir filesep 'DefaultAtlas.mat'],'DefaultAtlas');
 load([matdir filesep 'CCF_labels.mat'],'CCF_labels');
 load([matdir filesep 'Connectomes.mat'],'Connectomes');
 Conn = Connectomes.default;
-thresh_C = 0.8 * mean(nonzeros(Conn(:)));
+if strcmp(ip.Results.conn_thresh,'default')
+    thresh_C = 0.8 * mean(nonzeros(Conn(:)));
+else
+    thresh_C = ip.Results.conn_thresh * mean(nonzeros(Conn(:)));
+end
 Conn(Conn < thresh_C) = 0;
 Adj = logical(Conn);
 % Conn = readmatrix([matdir filesep 'mouse_connectome_19_01.csv']);
 % Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
-
 
 if ~isempty(ip.Results.init_path)
     init_path = zeros(size(Conn,1),1);
@@ -299,6 +304,7 @@ model_outputs.Sim.time_scale = ip.Results.time_scale;
 model_outputs.Sim.connectome_subset = ip.Results.connectome_subset;
 model_outputs.Sim.region_names = regnames;
 model_outputs.Sim.C = Conn;
+model_outputs.Sim.conn_thresh = ip.Results.conn_thresh;
 model_outputs.Sim.study = ip.Results.study;
 model_outputs.Sim.init_rescale = ip.Results.init_rescale;
 model_outputs.Sim.init_path = init_tau;
@@ -306,6 +312,7 @@ model_outputs.Sim.resmesh = ip.Results.resmesh;
 model_outputs.Sim.rel_tol = ip.Results.reltol;
 model_outputs.Sim.abs_tol = ip.Results.abstol;
 model_outputs.Sim.fsolve_tol = ip.Results.fsolvetol;
+model_outputs.Sim.conn_thresh = ip.Results.conn_thresh;
 
 if ip.Results.plotting
     figure

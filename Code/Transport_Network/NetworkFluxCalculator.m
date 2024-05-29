@@ -25,6 +25,7 @@ fsolvetol_ = 1e-6;
 connectome_subset_ = 'Hippocampus';
 len_scale_ = 1e-3;
 time_scale_ = 1;
+conn_thresh_ = 'default';
 
 ip = inputParser;
 validScalar = @(x) isnumeric(x) && isscalar(x) && (x>=0);
@@ -48,6 +49,7 @@ addParameter(ip, 'fsolvetol', fsolvetol_, validScalar);
 addParameter(ip, 'connectome_subset', connectome_subset_);
 addParameter(ip, 'len_scale', len_scale_, validScalar);
 addParameter(ip, 'time_scale', time_scale_, validScalar);
+addParameter(ip, 'conn_thresh', conn_thresh_, validScalar);
 parse(ip, varargin{:});
 beta_new = ip.Results.beta*ip.Results.time_scale;
 gamma1_new = ip.Results.gamma1*ip.Results.time_scale;

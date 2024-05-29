@@ -23,11 +23,11 @@ inputparams(1,:) = paramnames;
 inputparams{2,1} = 1e-6; % beta
 inputparams{2,2} = [1e-3,2e-3,4e-3,8e-3]; % gamma1
 inputparams{2,3} = 0; % gamma2
-inputparams{2,4} = [0.5,0.75]; % frac
+inputparams{2,4} = 0.92; % frac
 inputparams{2,5} = 0.05; % lambda1
 inputparams{2,6} = 0.05; % lambda2
-inputparams{2,7} = 100; % delta
-inputparams{2,8} = [1,10]; % epsilon
+inputparams{2,7} = [1,100]; % delta
+inputparams{2,8} = [1,100]; % epsilon
 
 % 2b. Create parameter array to grid search using allcomb()
 paramgrid = allcomb(inputparams{2,1},...
@@ -48,13 +48,13 @@ L_ais = 40; % default = 40
 L_syn = 40; % default = 40
 T = []; % default = 0.05
 dt = []; % default = 0.005
-trange = [0:0.0025:0.1, 0.105:0.005:0.3, 0.31:0.01:1];
+trange = [0:0.001:0.05, 0.055:0.005:0.3, 0.31:0.01:1];
 resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 plotting = 0;
 reltol = 1e-4;
 abstol = 1e-4;
 fsolvetol = 1e-6;
-init_rescale = 0.02;
+init_rescale = 0.2;
 init_path = {'Field CA1_L'};
 study = 'DS9';
 connectome_subset = 'All';
@@ -97,7 +97,8 @@ parfor i = 1:size(paramgrid,1)
                                 'init_path',init_path,...
                                 'study',study,...
                                 'connectome_subset',connectome_subset,...
-                                'sim_no',i);
+                                'sim_no',i,...
+                                'conn_thresh',conn_thresh);
     sim_struct(i).Model_Outputs = mdloutput;
 end
 output_struct.Simulations = sim_struct;
