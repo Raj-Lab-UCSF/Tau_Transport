@@ -33,6 +33,9 @@ time_scale_ = 1;
 len_scale_ = 1e-3;
 sim_no_ = 1;
 conn_thresh_ = 'default';
+use_sr_ = 0;
+sr_fun_flux_ = [];
+sr_fun_em_ = [];
 
 ip = inputParser;
 % validChar = @(x) ischar(x);
@@ -59,6 +62,9 @@ addParameter(ip, 'connectome_subset', connectome_subset_);
 addParameter(ip, 'len_scale', len_scale_, validScalar);
 addParameter(ip, 'time_scale', time_scale_, validScalar);
 addParameter(ip, 'conn_thresh', conn_thresh_);
+addParameter(ip, 'use_sr', use_sr_, validLogical);
+addParameter(ip, 'sr_fun_flux', sr_fun_flux_);
+addParameter(ip, 'sr_fun_em', sr_fun_em_);
 
 addParameter(ip, 'study', study_);
 addParameter(ip, 'init_rescale', init_rescale_, validScalar);
@@ -186,7 +192,10 @@ fprintf('Calculating initial flux, Simulation %d \n',ip.Results.sim_no)
                                 'fsolvetol',ip.Results.fsolvetol,... % compute the steady state network flux at time t0
                                 'connectome_subset',ip.Results.connectome_subset,...
                                 'time_scale',ip.Results.time_scale,...
-                                'len_scale',ip.Results.len_scale); 
+                                'len_scale',ip.Results.len_scale,...
+                                'use_sr',ip.Results.use_sr,...
+                                'sr_fun_flux',ip.Results.sr_fun_flux,...
+                                'sr_fun_em',ip.Results.sr_fun_em); 
 
 for h = 1:(nt-1)
     fprintf('Time step %d/%d, Simulation %d\n',h,nt-1,ip.Results.sim_no)
@@ -262,7 +271,10 @@ for h = 1:(nt-1)
                                     'fsolvetol',ip.Results.fsolvetol,...
                                     'connectome_subset',ip.Results.connectome_subset,...
                                     'time_scale',ip.Results.time_scale,...
-                                    'len_scale',ip.Results.len_scale);
+                                    'len_scale',ip.Results.len_scale,...
+                                    'use_sr',ip.Results.use_sr,...
+                                    'sr_fun_flux',ip.Results.sr_fun_flux,...
+                                    'sr_fun_em',ip.Results.sr_fun_em); 
 end
 M = (gamma1_new * N.^2)./(beta_new - gamma2_new * N);
 % mass_cons_check = 0;
@@ -319,6 +331,9 @@ model_outputs.Sim.rel_tol = ip.Results.reltol;
 model_outputs.Sim.abs_tol = ip.Results.abstol;
 model_outputs.Sim.fsolve_tol = ip.Results.fsolvetol;
 model_outputs.Sim.conn_thresh = ip.Results.conn_thresh;
+model_outputs.Sim.use_sr = ip.Results.use_sr;
+model_outputs.Sim.sr_fun_flux = ip.Results.sr_fun_flux;
+model_outputs.Sim.sr_fun_em = ip.Results.sr_fun_em;
 
 if ip.Results.plotting
     figure

@@ -28,7 +28,7 @@ X = DataToCCF_Transport(X,regs,1,loadpath_);
 X_plot = X;
 X_plot(isnan(X_plot)) = 0;
 X_plot = X_plot / max(X(:));
-% X_plot(X_plot < 0.25*median(nonzeros(X_plot(:)))) = 0;
+X_plot(X_plot < 0.25*median(nonzeros(X_plot(:)))) = 0;
 X_plot = X_plot .^ (1/2); 
 if wflow
     C = output_struct.Simulations(simno).Model_Outputs.Sim.C;
