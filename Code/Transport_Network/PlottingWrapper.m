@@ -260,6 +260,10 @@ SimulationSeedCorrelationPlot(simstr,antind,retind,loadpath,simpath,savenclose,f
 %% S1. Check mass conservation
 MassConservationPlot(simstr,loadpath,simpath,1,figpath);
 
+%% S2. AMBCA Heatmap
+savenclose = 1;
+AMBCAHeatmap_transport(simstr,1,loadpath,simpath,savenclose,figpath);
+
 %% Misc.
 % params = output_struct.Parameter_Grid;
 % params_ret = params((params(:,7) < params(:,8)),:);
