@@ -294,6 +294,7 @@ model_outputs = struct;
 model_outputs.Predicted.N = N;
 model_outputs.Predicted.M = M;
 model_outputs.Predicted.F = netw_flux;
+model_outputs.Predicted.W1 = W1;
 model_outputs.Predicted.EdgeMass = Mass_edge;
 model_outputs.Parameters.beta = ip.Results.beta;
 model_outputs.Parameters.gamma1 = ip.Results.gamma1;
