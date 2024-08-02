@@ -50,7 +50,7 @@ addParameter(ip, 'fsolvetol', fsolvetol_, validScalar);
 addParameter(ip, 'connectome_subset', connectome_subset_);
 addParameter(ip, 'len_scale', len_scale_, validScalar);
 addParameter(ip, 'time_scale', time_scale_, validScalar);
-addParameter(ip, 'use_sr_w1', use_sr_w1_);
+addParameter(ip, 'use_sr', use_sr_);
 addParameter(ip, 'sr_fun_w1', sr_fun_w1_);
 parse(ip, varargin{:});
 beta_new = ip.Results.beta * ip.Results.time_scale;
@@ -207,11 +207,11 @@ end
 nroi = size(Adj,1);
 
 % % % Use symbolic expression from DSO
-if ~isempty(ip.Results.sr_fun_w1) && logical(ip.Results.use_sr_w1)
+if ~isempty(ip.Results.sr_fun_w1) && logical(ip.Results.use_sr)
     fprintf('Using DSO Expression\n')
     N1_mat = repmat(tau_xL,1,nroi);
     N2_mat = repmat(tau_xL.',nroi,1);
-    W_1_flux = ip.Results.sr_fun_w1(gamma1_new,...
+    W_1_flux = ip.Results.sr_fun_flux(gamma1_new,...
                                           ip.Results.lambda1,... % only when lambda1 == lambda2
                                           ip.Results.delta,...
                                           ip.Results.epsilon,...

@@ -341,11 +341,9 @@ model_outputs.Sim.rel_tol = ip.Results.reltol;
 model_outputs.Sim.abs_tol = ip.Results.abstol;
 model_outputs.Sim.fsolve_tol = ip.Results.fsolvetol;
 model_outputs.Sim.conn_thresh = ip.Results.conn_thresh;
-model_outputs.Sim.use_sr_flux = ip.Results.use_sr_flux;
+model_outputs.Sim.use_sr_flux = ip.Results.use_sr;
 model_outputs.Sim.sr_fun_flux = ip.Results.sr_fun_flux;
 model_outputs.Sim.sr_fun_em = ip.Results.sr_fun_em;
-model_outputs.Sim.use_sr_w1 = ip.Results.use_sr_w1;
-model_outputs.Sim.sr_fun_w1 = ip.Results.sr_fun_w1;
 
 if ip.Results.plotting
     figure

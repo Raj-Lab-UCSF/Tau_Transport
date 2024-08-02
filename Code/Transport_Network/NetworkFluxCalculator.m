@@ -26,7 +26,7 @@ connectome_subset_ = 'Hippocampus';
 len_scale_ = 1e-3;
 time_scale_ = 1;
 conn_thresh_ = 'default';
-use_sr_ = 0;
+use_sr_flux_ = 0;
 sr_fun_flux_ = [];
 sr_fun_em_ = [];
 
@@ -53,7 +53,7 @@ addParameter(ip, 'connectome_subset', connectome_subset_);
 addParameter(ip, 'len_scale', len_scale_, validScalar);
 addParameter(ip, 'time_scale', time_scale_, validScalar);
 addParameter(ip, 'conn_thresh', conn_thresh_, validScalar);
-addParameter(ip, 'use_sr', use_sr_);
+addParameter(ip, 'use_sr_flux', use_sr_flux_);
 addParameter(ip, 'sr_fun_flux', sr_fun_flux_);
 addParameter(ip, 'sr_fun_em', sr_fun_em_);
 
@@ -68,7 +68,7 @@ L_ais_new = ip.Results.L_ais * ip.Results.len_scale;
 L_syn_new = ip.Results.L_syn * ip.Results.len_scale;
 
 % % % 2a. Use symbolic expression from DSO
-if ~isempty(ip.Results.sr_fun_flux) && ~isempty(ip.Results.sr_fun_em) && logical(ip.Results.use_sr)
+if ~isempty(ip.Results.sr_fun_flux) && ~isempty(ip.Results.sr_fun_em) && logical(ip.Results.use_sr_flux)
 % theta = {gamma1, lambda, delta, epsilon, N1, N2}
 fprintf('Using DSO Expression\n')
 Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
