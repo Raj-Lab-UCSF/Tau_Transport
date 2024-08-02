@@ -3,7 +3,7 @@
 
 %% 1. Define directories for saving outputs
 clear; clc;
-curpath = '/wynton/protected/home/rajlab/jtorok/MATLAB/Tau_Transport'; % CHANGE THIS LINE TO WHERE Tau_Transport DIRECTORY IS
+curpath = '/Users/justintorok/Documents/MATLAB/Tau_Transport'; % CHANGE THIS LINE TO WHERE Tau_Transport DIRECTORY IS
 p = genpath(curpath);
 addpath(p);
 simpath = [curpath filesep 'SampleFiles']; % THIS IS WHERE THE OUTPUTS WILL BE SAVED
@@ -11,7 +11,8 @@ loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'All_CA1seed_dir_Brandon'; % CHANGE THIS AS NEEDED, THIS IS THE NAME OF THE OUTPUT FILE
+simstr = 'Brandon_test'; % CHANGE THIS AS NEEDED, THIS IS THE NAME OF THE OUTPUT FILE
+use_sr = 0; % CHANGE TO 1 ONLY IF BENCHMARKING PERFORMANCE WITH SR
 
 %% 2. Parameter definitions
 % 2a. Define actively tuned parameters as scalars or arrays to be explored
@@ -21,16 +22,24 @@ paramnames = {'beta','gamma1','gamma2','frac','lambda1','lambda2',...
     'delta','epsilon'};
 inputparams(1,:) = paramnames;
 
-% CAN CHANGE THESE VALUES (LINES 25-32), BUT KEEP VALUES CLOSE. ALL CAN BE
-% ARRAYS
-inputparams{2,1} = 1e-6; % beta, KEEP SAME
-inputparams{2,2} = [1e-3,2e-3,4e-3,8e-3]; % gamma1
-inputparams{2,3} = 0; % gamma2, KEEP SAME
-inputparams{2,4} = 0.92; % frac, KEEP SAME (though this one will be interesting at some point, maybe)
+% CAN CHANGE THESE VALUES (LINES 26-33), BUT KEEP VALUES CLOSE. ALL CAN BE ARRAYS
+% inputparams{2,1} = 1e-6; % beta, KEEP SAME
+% inputparams{2,2} = [1e-3,2e-3,4e-3,8e-3]; % gamma1
+% inputparams{2,3} = 0; % gamma2, KEEP SAME
+% inputparams{2,4} = 0.92; % frac, KEEP SAME (though this one will be interesting at some point, maybe)
+% inputparams{2,5} = 0.05; % lambda1
+% inputparams{2,6} = 0.05; % lambda2, KEEP SAME AS lambda1
+% inputparams{2,7} = [1,100]; % delta
+% inputparams{2,8} = [1,100]; % epsilon
+
+inputparams{2,1} = 1e-6; % beta
+inputparams{2,2} = 2e-3; % gamma1
+inputparams{2,3} = 0; % gamma2
+inputparams{2,4} = 0.92; % frac
 inputparams{2,5} = 0.05; % lambda1
-inputparams{2,6} = 0.05; % lambda2, KEEP SAME AS lambda1
-inputparams{2,7} = [1,100]; % delta
-inputparams{2,8} = [1,100]; % epsilon
+inputparams{2,6} = 0.05; % lambda2
+inputparams{2,7} = 1; % delta
+inputparams{2,8} = 100; % epsilon
 
 % 2b. Create parameter array to grid search using allcomb()
 paramgrid = allcomb(inputparams{2,1},...
@@ -53,28 +62,72 @@ L_ais = 40; % default = 40
 L_syn = 40; % default = 40
 T = []; % default = 0.05
 dt = []; % default = 0.005
-trange = [0:0.001:0.05, 0.055:0.005:0.3, 0.31:0.01:1];
+trange = [0:0.01:0.05];
+% trange = [0:0.0025:0.1, 0.105:0.005:0.3, 0.31:0.01:1]; % YOU CAN CHANGE THIS, KEEP CLOSE INITIAL SPACING
 resmesh = 'coarse';
 plotting = 0;
 reltol = 1e-4;
 abstol = 1e-4;
 fsolvetol = 1e-6;
-init_rescale = 0.2;
-init_path = {'Field CA1_L'};
-study = 'DS9';
-connectome_subset = 'LH'; % YOU SHOULDN'T HAVE TO CHANGE THIS, BUT FOR WHOLE BRAIN IT WOULD BE 'WB'
+% init_rescale = 2e-3;
+% init_path = {'Field CA1_L'};
+% study = 'DS9';
+% connectome_subset = 'LH';
+init_rescale = 2e-4;
+init_path = {'Entorhinal area, lateral part_L'};
+study = 'Hurtado';
+connectome_subset = 'Hippocampus+PC+RSP';
 conn_thresh = 0.8;
-ncores = 16; % NUMBER OF CORES TO USE FOR PARFOR, IF RUNNING IN PARALLEL
+% ncores = 4; % NUMBER OF CORES TO USE FOR PARFOR, IF RUNNING IN PARALLEL
+
+% Symbolic regression functions
+
+% C = 26, dso_Brandon_sim_csv_v3_parameters[74,75,76,77]_training.samples.Flux_0_pf.csv
+sr_fun_flux = @(x1,x2,x3,x4,x5,x6) (x1 + x5) .* (x2.^2 .* (x5 - x6) - ...
+    9.31512e-6 .* x2 .* x5.^2 + 1.00301e-5 .* x2 .* x5 .* x6 - ...
+    1.31848e-6 .* x2 .* x6.^2 - 0.00765691 .* x3 .* x5.^2 + ...
+    0.0106538 .* x3 .* x5 .* x6 + 2.94007e-6 .* x3 .* x5 - ...
+    0.000242007 .* x3 .* x6.^2 + 2.14855e-6 .* x3 .* x6 - ...
+    0.0150312 .* x4 .* x5.^2 + 0.0117431 .* x4 .* x5 .* x6 - ...
+    0.00549829 .* x4 .* x6.^2 - 0.000186302 .* x5.^2 + ...
+    0.000200602 .* x5 .* x6 - 2.63696e-5 .* x6.^2);
+
+% C = 59, dso_Brandon_sim_csv_v3_parameters[190,191,192,193]_training.samples.EdgeMass_0_pf.csv
+sr_fun_em = @(x1,x2,x3,x4,x5,x6) 1.49886e-5 .* x1 .* x3 .* x5 + ...
+    1.33074e-5 .* x1 .* x3 .* x6 + 1.49539e-5 .* x1 .* x4 .* x5 + ...
+    1.32919e-5 .* x1 .* x4 .* x6 + 0.00174532 .* x1 .* x5.^2 - ...
+    0.000336632 .* x1 .* x5 .* x6 + 6.90894e-6 .* x1 .* x5 + ...
+    0.00214239 .* x1 .* x6.^2 + 6.13593e-6 .* x1 .* x6 - 2 .* x1 + ...
+    7.46779e-5 .* x2^.2 .* x5 + 6.6323e-5 .* x2.^2 .* x6 - ...
+    3.14367e-6 .* x2 .* x3.^2 + 0.00694651 .* x2 .* x3 .* x5 + ...
+    0.0061693 .* x2 .* x3 .* x6 + 0.00694618 .* x2 .* x4 .* x5 + ...
+    0.00616916 .* x2 .* x4 .* x6 + 0.0173999 .* x2 .* x5.^2 - ...
+    0.00303584 .* x2 .* x5 .* x6 + 0.00074537 .* x2 .* x5 + ...
+    0.0211544 .* x2 .* x6.^2 + 0.000661979 .* x2 .* x6 + ...
+    6.80644e-6 .* x3.^3 - 4.88011e-5 .* x3.^2 .* x4 - ...
+    0.000393509 .* x3.^2 .* x5 - 0.00040319 .* x3.^2 .* x6 + ...
+    1.69614e-5 .* x3.^2 + 9.74902e-5 .* x3 .* x4.^2 - ...
+    0.000827774 .* x3 .* x4 .* x5 - 0.000597008 .* x3 .* x4 .* x6 + ...
+    9.35037e-6 .* x3 .* x4 + 21.7879 .* x3 .* x5.^2 - ...
+    4.21122 .* x3 .* x5 .* x6 + 0.0675866 .* x3 .* x5 + ...
+    26.7503 .* x3 .* x6.^2 + 0.0600245 .* x3 .* x6 + 1.96702e-6 .* x3 ...
+    - 5.56667e-5 .* x4.^3 + 1.38817e-5 .* x4.^2 .* x5 - ...
+    6.79406e-5 .* x4.^2 .* x6 - 7.33859e-6 .* x4.^2 + 11.1659 .* x4 .* x5.^2 - ...
+    2.06105 .* x4 .* x5 .* x6 + 0.0675823 .* x4 .* x5 + ...
+    13.2287 .* x4 .* x6.^2 + 0.0600226 .* x4 .* x6 - 5.65931e-6 .* x4 + ...
+    0.000291258 .* x5.^3 + 2.48572e-5 .* x5.^2 .* x6 + 0.228182 .* x5.^2 + ...
+    4.64369e-5 .* x5 .* x6.^2 - 0.0409196 .* x5 .* x6 + 0.00744567 .* x5 + ...
+    0.000347882 .* x6.^3 + 0.278125 .* x6.^2 + 0.00660373 .* x6;
 
 %% 3. Run NetworkTransportModel
 output_struct = struct;
 output_struct.Parameter_Grid = paramgrid;   
 output_struct.Parameter_Names = inputparams(1,:);
 sim_struct = struct;
-parpool(ncores) % IF DOING SERIALLY, COMMENT OUT
-tic
-% for i = 1:size(paramgrid,1) % IF DOING SERIALLY, UNCOMMENT
-parfor i = 1:size(paramgrid,1) % IF DOING SERIALLY, COMMENT OUT
+% parpool(ncores) % IF DOING SERIALLY, COMMENT OUT
+tStart = tic;
+for i = 1:size(paramgrid,1) % IF DOING SERIALLY, UNCOMMENT
+% parfor i = 1:size(paramgrid,1) % IF DOING SERIALLY, COMMENT OUT
     fprintf('Simulation %d/%d \n',i,size(paramgrid,1))
     paramlist = paramgrid(i,:);
     paramnames_i = paramnamescell(i,:); % prevents broadcast warning message
@@ -104,12 +157,15 @@ parfor i = 1:size(paramgrid,1) % IF DOING SERIALLY, COMMENT OUT
                                 'study',study,...
                                 'connectome_subset',connectome_subset,...
                                 'sim_no',i,...
-                                'conn_thresh',conn_thresh);
+                                'conn_thresh',conn_thresh,...
+                                'use_sr',use_sr,...
+                                'sr_fun_flux',sr_fun_flux,...
+                                'sr_fun_em',sr_fun_em); %#ok<UNRCH>
     sim_struct(i).Model_Outputs = mdloutput;
 end
 output_struct.Simulations = sim_struct;
-delete(gcp('nocreate')); % IF DOING SERIALLY, COMMENT OUT
-toc
+output_struct.Time_Elapsed = toc(tStart);
+% delete(gcp('nocreate')); % IF DOING SERIALLY, COMMENT OUT
 
 %% 4. Save output file
 save([simpath filesep simstr '.mat'],'output_struct') 
