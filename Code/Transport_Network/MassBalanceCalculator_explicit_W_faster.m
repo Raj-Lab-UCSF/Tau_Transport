@@ -203,6 +203,8 @@ switch ip.Results.connectome_subset
         Adj = Adj(1:213,1:213);
     case 'LH'
         Adj = Adj(214:end,214:end);
+    case 'Single'
+        Adj = 1;
 end
 nroi = size(Adj,1);
 
@@ -345,7 +347,7 @@ R_ss_int = V_ss_int(nroi*nroi+1:2*nroi*nroi);
 R_ss = reshape(R_ss_int,nroi,nroi);
 
 % % % 6. Functions
-     function F=fun_F_n_axon(x,n)
+     function F=fun_F_n_axon(x,n) %#ok<INUSD>
               F=-1/diff_n*((1-ip.Results.frac)...
             ./ip.Results.frac).*(v_a+2*v_a*ip.Results.delta.*n-...
             (3*v_a*beta_new.*gamma1_new.*ip.Results.epsilon.*n.^2-2*v_a*...
