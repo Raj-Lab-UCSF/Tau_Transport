@@ -85,6 +85,7 @@ load([matdir filesep 'DefaultAtlas.mat'],'DefaultAtlas');
 load([matdir filesep 'CCF_labels.mat'],'CCF_labels');
 load([matdir filesep 'Connectomes.mat'],'Connectomes');
 Conn = Connectomes.default;
+Conn = Conn - diag(diag(Conn)); % remove the diagonal
 if strcmp(ip.Results.conn_thresh,'default')
     thresh_C = 0.8 * mean(nonzeros(Conn(:)));
 else

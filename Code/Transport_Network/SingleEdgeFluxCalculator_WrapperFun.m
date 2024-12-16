@@ -50,8 +50,8 @@ addParameter(ip, 'epsilon', epsilon_, validScalar);
 addParameter(ip, 'frac', frac_, validScalar);
 addParameter(ip, 'lambda1', lambda1_, validScalar);
 addParameter(ip, 'lambda2', lambda2_, validScalar);
-addParameter(ip, 'tau_x0', tau_x0_, validScalar)
-addParameter(ip, 'tau_xL', tau_xL_, validScalar)
+addParameter(ip, 'tau_x0', tau_x0_, validScalar);
+addParameter(ip, 'tau_xL', tau_xL_, validScalar);
 addParameter(ip, 'L_int', L_int_, validScalar);
 addParameter(ip, 'L1', L1_, validScalar);
 addParameter(ip, 'L2', L2_, validScalar);
