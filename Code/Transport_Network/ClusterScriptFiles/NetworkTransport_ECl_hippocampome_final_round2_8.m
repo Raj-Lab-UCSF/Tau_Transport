@@ -21,11 +21,11 @@ paramnames = {'beta','gamma1','gamma2','frac','lambda1','lambda2',...
     'delta','epsilon'};
 inputparams(1,:) = paramnames;
 inputparams{2,1} = 1e-6; % beta
-inputparams{2,2} = [1e-3,2e-3,4e-3,8e-3]; % gamma1
+inputparams{2,2} = [2e-3,4e-3]; % gamma1
 inputparams{2,3} = 0; % gamma2
 inputparams{2,4} = 0.92; % frac
-inputparams{2,5} = 0.001; % lambda1
-inputparams{2,6} = 0.001; % lambda2
+inputparams{2,5} = 0.005; % lambda1
+inputparams{2,6} = 0.005; % lambda2
 inputparams{2,7} = [25,50]; % delta
 inputparams{2,8} = [25,50]; % epsilon
 
