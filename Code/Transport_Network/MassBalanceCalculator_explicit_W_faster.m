@@ -23,6 +23,7 @@ reltol_ = 1e-4;
 abstol_ = 1e-4;
 fsolvetol_ = 1e-6;
 connectome_subset_ = 'Hippocampus';
+conn_thresh_ = 'default';
 len_scale_ =1e-3;
 time_scale_ =1;
 use_sr_w1_ = 0;
@@ -48,6 +49,7 @@ addParameter(ip, 'reltol', reltol_, validScalar);
 addParameter(ip, 'abstol', abstol_, validScalar);
 addParameter(ip, 'fsolvetol', fsolvetol_, validScalar);
 addParameter(ip, 'connectome_subset', connectome_subset_);
+addParameter(ip, 'conn_thresh', conn_thresh_);
 addParameter(ip, 'len_scale', len_scale_, validScalar);
 addParameter(ip, 'time_scale', time_scale_, validScalar);
 addParameter(ip, 'use_sr_w1', use_sr_w1_);
@@ -191,7 +193,17 @@ q_ss_postsyn_01=@(S,x)1-S.*((x5-x4)/(diff_n)-(x-x4)./(diff_n));
 % f_q_ss = @(W,A,B,V0,V_L)(q_ss_syncleft(W,A,B,V0,x4) - W.*(x5-x4)/diff_n-V_L); 
 
 % % % 5. Perform shooting problem 
-Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
+% Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
+load([matdir filesep 'Connectomes.mat'],'Connectomes'); % more updated version of connectome, should be minor
+Conn = Connectomes.default;
+Conn = Conn - diag(diag(Conn)); % remove the diagonal
+if strcmp(ip.Results.conn_thresh,'default')
+    thresh_C = 0.8 * mean(nonzeros(Conn(:)));
+else
+    thresh_C = ip.Results.conn_thresh * mean(nonzeros(Conn(:)));
+end
+Conn(Conn < thresh_C) = 0;
+Adj = logical(Conn);
 switch ip.Results.connectome_subset
     case 'Hippocampus'
         Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);

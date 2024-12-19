@@ -3,13 +3,17 @@ clear; clc;
 matdir = '~/Documents/MATLAB/Tau_Transport_OtherFiles/FinalSimFiles';
 loadpath = '~/Documents/MATLAB/Tau_Transport/MatFiles';
 rng(0);
-load([matdir filesep 'hippocampus_testmat_for_single_edge_debug.mat'],'output_struct');
+load([matdir filesep 'hippocampus_testmat_for_single_edge_debug_tolfun_2.mat'],'output_struct');
 ntests = 250;
 Fs_true = NaN(ntests,1); Fs_test = Fs_true;
 W1s_true = NaN(ntests,1); W1s_test = W1s_true;
 nsims = size(output_struct.Parameter_Grid,1);
 nroi = size(output_struct.Simulations(1).Model_Outputs.Predicted.N,1);
 nt = size(output_struct.Simulations(1).Model_Outputs.Predicted.N,2);
+reltol = output_struct.Simulations(1).Model_Outputs.Sim.rel_tol; % orig: 1e-4
+abstol = output_struct.Simulations(1).Model_Outputs.Sim.abs_tol; % orig: 1e-4
+fsolvetol = output_struct.Simulations(1).Model_Outputs.Sim.fsolve_tol; % orig: 1e-6
+
 for i = 1:ntests
     fprintf('Random iteration %d/%d\n',i,ntests)
     randsimno = datasample(1:nsims,1);
@@ -33,7 +37,10 @@ for i = 1:ntests
                                     'beta',paramstruct_i.beta,...
                                     'frac',paramstruct_i.frac,...
                                     'lambda2',paramstruct_i.lambda2,... % same as lambda1
-                                    'gamma2',paramstruct_i.gamma2);
+                                    'gamma2',paramstruct_i.gamma2,...
+                                    'reltol',reltol,...
+                                    'abstol',abstol,...
+                                    'fsolvetol',fsolvetol);
     Fs_test(i) = mdloutput.Predicted.F;
     W1_i = SingleEdgeWCalculator(loadpath,Fs_true(i),...
                                     'gamma1',paramstruct_i.gamma1,...
@@ -45,14 +52,17 @@ for i = 1:ntests
                                     'beta',paramstruct_i.beta,...
                                     'frac',paramstruct_i.frac,...
                                     'lambda2',paramstruct_i.lambda2,... % same as lambda1
-                                    'gamma2',paramstruct_i.gamma2);
+                                    'gamma2',paramstruct_i.gamma2,...
+                                    'reltol',reltol,...
+                                    'abstol',abstol,...
+                                    'fsolvetol',fsolvetol);
     W1s_test(i) = W1_i;
 end
 
-figure('Units','inches','Position',[0 0 15 16]); 
+figure('Units','inches','Position',[0 0 13 17]); 
 subplot(2,2,1); hold on;       
-scatter(Fs_test,Fs_true,'bo');
-xlabel('F_t_e_s_t'); ylabel('F_t_r_u_e');
+scatter(Fs_true,Fs_test,'bo');
+ylabel('F_e_d_g_e'); xlabel('F_n_e_t_w_o_r_k');
 xlim([1.1*min(Fs_test),1.1*max(Fs_test)]);
 ylim([1.1*min(Fs_true),1.1*max(Fs_true)]);
 h = lsline;
@@ -60,29 +70,36 @@ legend(h,{sprintf('R^2 = %.2f',corr(Fs_test,Fs_true)^2)},'Location','northwest')
 set(gca,'FontSize',20,'FontName','Times','box','on');
 
 subplot(2,2,2); hold on;       
-scatter(W1s_test,W1s_true,'ro');
-xlabel('W1_t_e_s_t'); ylabel('W1_t_r_u_e');
+scatter(W1s_true,W1s_test,'ro');
+ylabel('W1_e_d_g_e'); xlabel('W1_n_e_t_w_o_r_k');
 xlim([0.9*min(W1s_test),1.1*max(W1s_test)]);
 ylim([0.9*min(W1s_true),1.1*max(W1s_true)]);
 h = lsline;
 legend(h,{sprintf('R^2 = %.2f',corr(W1s_test,W1s_true)^2)},'Location','northwest');
 set(gca,'FontSize',20,'FontName','Times','box','on');
 
+rel_err_F = (Fs_test - Fs_true)./abs(Fs_true);
 subplot(2,2,3); hold on;       
-scatter(Fs_true,(Fs_test - Fs_true),'bo');
+scatter(Fs_true,rel_err_F,'bo');
 plot([1.1*min(Fs_true),1.1*max(Fs_true)],[0 0],'LineStyle','--','Color','k')
-xlabel('F_t_r_u_e'); ylabel('F_t_e_s_t - F_t_r_u_e');
+xlabel('F_n_e_t_w_o_r_k'); ylabel('Rel. Error');
 xlim([1.1*min(Fs_true),1.1*max(Fs_true)]);
-ylim([1.1*min(Fs_test - Fs_true),1.1*max(Fs_test - Fs_true)]);
+ylim([1.1*min(rel_err_F),1.1*max(rel_err_F)]);
+legend({sprintf('Mean |E| = %.1d',mean(abs(rel_err_F)))},'Location','southeast');
 set(gca,'FontSize',20,'FontName','Times','box','on');
 
+rel_err_W1 = (W1s_test - W1s_true)./abs(W1s_true);
 subplot(2,2,4); hold on;       
-scatter(W1s_true,(W1s_test - W1s_true),'ro');
+scatter(W1s_true,rel_err_W1,'ro');
 plot([1.1*min(W1s_true),1.1*max(W1s_true)],[0 0],'LineStyle','--','Color','k')
-xlabel('W1_t_r_u_e'); ylabel('W1_t_e_s_t - W1_t_r_u_e');
+xlabel('W1_n_e_t_w_o_r_k'); ylabel('Rel. Error');
 xlim([1.1*min(W1s_true),1.1*max(W1s_true)]);
-ylim([1.1*min(W1s_test - W1s_true),1.1*max(W1s_test - W1s_true)]);
+ylim([1.1*min(rel_err_W1),1.1*max(rel_err_W1)]);
+legend({sprintf('Mean |E| = %.1d',mean(abs(rel_err_W1)))},'Location','southeast');
 set(gca,'FontSize',20,'FontName','Times','box','on');
+
+tolstr = sprintf('ODE RelTol = %.0e, ODE AbsTol = %.0e, fsolve TolFun = %.0e',reltol,abstol,fsolvetol);
+sgtitle(tolstr,'FontSize',24,'FontWeight','bold','FontName','Times');
 
 %% Test for SR
 matdir = '~/Documents/MATLAB/Tau_Transport/SampleFiles';

@@ -71,23 +71,33 @@ L_syn_new = ip.Results.L_syn * ip.Results.len_scale;
 if ~isempty(ip.Results.sr_fun_flux) && ~isempty(ip.Results.sr_fun_em) && logical(ip.Results.use_sr_flux)
 % theta = {gamma1, lambda, delta, epsilon, N1, N2}
 fprintf('Using DSO Expression\n')
-if strcmp(ip.Results.connectome_subset,'Single')
-    Adj = 1;
+
+% Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
+load([matdir filesep 'Connectomes.mat'],'Connectomes'); % more updated version of connectome, should be minor
+Conn = Connectomes.default;
+Conn = Conn - diag(diag(Conn)); % remove the diagonal
+if strcmp(ip.Results.conn_thresh,'default')
+    thresh_C = 0.8 * mean(nonzeros(Conn(:)));
 else
-    Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
-    switch ip.Results.connectome_subset
-        case 'Hippocampus'
-            Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
-        case 'Hippocampus+PC+RSP'
-            adjinds = [27:37,78:80,147];
-            adjinds = [adjinds,adjinds+213];
-            Adj = Adj(adjinds,adjinds);
-        case 'RH'
-            Adj = Adj(1:213,1:213);
-        case 'LH'
-            Adj = Adj(214:end,214:end);
-    end
+    thresh_C = ip.Results.conn_thresh * mean(nonzeros(Conn(:)));
 end
+Conn(Conn < thresh_C) = 0;
+Adj = logical(Conn);
+switch ip.Results.connectome_subset
+    case 'Hippocampus'
+        Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
+    case 'Hippocampus+PC+RSP'
+        adjinds = [27:37,78:80,147];
+        adjinds = [adjinds,adjinds+213];
+        Adj = Adj(adjinds,adjinds);
+    case 'RH'
+        Adj = Adj(1:213,1:213);
+    case 'LH'
+        Adj = Adj(214:end,214:end);
+    case 'Single'
+        Adj = 1;
+end
+
 nroi = size(Adj,1);
 % N1_mat = repmat(tau_xL,1,nroi);
 % N2_mat = repmat(tau_xL.',nroi,1);
@@ -219,23 +229,33 @@ n_ss_postsyn = @(A,B,x) (n_ss_syncleft(A,B,x4) - A.*(x-x4)/diff_n);
 f_ss=@(A,B,C)(n_ss_syncleft(A,B,x4) - A.*(x5-x4)/diff_n-C);
 
 % % % 5b. Flux calculation on network 
-if strcmp(ip.Results.connectome_subset,'Single')
-    Adj = 1;
+
+% Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
+load([matdir filesep 'Connectomes.mat'],'Connectomes'); % more updated version of connectome, should be minor
+Conn = Connectomes.default;
+Conn = Conn - diag(diag(Conn)); % remove the diagonal
+if strcmp(ip.Results.conn_thresh,'default')
+    thresh_C = 0.8 * mean(nonzeros(Conn(:)));
 else
-    Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
-    switch ip.Results.connectome_subset
-        case 'Hippocampus'
-            Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
-        case 'Hippocampus+PC+RSP'
-            adjinds = [27:37,78:80,147];
-            adjinds = [adjinds,adjinds+213];
-            Adj = Adj(adjinds,adjinds);
-        case 'RH'
-            Adj = Adj(1:213,1:213);
-        case 'LH'
-            Adj = Adj(214:end,214:end);
-    end
+    thresh_C = ip.Results.conn_thresh * mean(nonzeros(Conn(:)));
 end
+Conn(Conn < thresh_C) = 0;
+Adj = logical(Conn);
+switch ip.Results.connectome_subset
+    case 'Hippocampus'
+        Adj = Adj([27:37 (27+213):(37+213)], [27:37 (27+213):(37+213)]);
+    case 'Hippocampus+PC+RSP'
+        adjinds = [27:37,78:80,147];
+        adjinds = [adjinds,adjinds+213];
+        Adj = Adj(adjinds,adjinds);
+    case 'RH'
+        Adj = Adj(1:213,1:213);
+    case 'LH'
+        Adj = Adj(214:end,214:end);
+    case 'Single'
+        Adj = 1;
+end
+
 nroi = size(Adj,1);
 network_flux = zeros(nroi);
 for i = 1:nroi
