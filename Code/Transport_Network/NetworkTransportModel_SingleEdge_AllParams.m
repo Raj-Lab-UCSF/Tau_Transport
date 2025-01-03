@@ -75,9 +75,9 @@ L2 = 200; % default = 200
 L_ais = 40; % default = 40
 L_syn = 40; % default = 40
 resmesh = 'coarse';
-reltol = 1e-4;
-abstol = 1e-4;
-fsolvetol = 1e-6;
+reltol = 1e-10;
+abstol = 1e-10;
+fsolvetol = 1e-10;
 ncores = 4; % NUMBER OF CORES TO USE FOR PARFOR; SET TO 0 FOR CPU ONLY
 
 % 2f. Symbolic regression function, flux

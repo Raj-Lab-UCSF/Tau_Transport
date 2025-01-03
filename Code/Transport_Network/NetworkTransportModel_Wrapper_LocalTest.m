@@ -62,13 +62,13 @@ L_ais = 40; % default = 40
 L_syn = 40; % default = 40
 T = []; % default = 0.05
 dt = []; % default = 0.005
-trange = 0:0.01:0.03; % tolerance debug
-% trange = [0:0.0025:0.1, 0.105:0.005:0.3, 0.31:0.01:1]; % Original
+% trange = 0:0.01:0.03; % tolerance debug
+trange = [0:0.0025:0.1, 0.105:0.005:0.3, 0.31:0.01:1]; % Original
 resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 plotting = 0;
-reltol = 1e-4; % orig: 1e-4
-abstol = 1e-4; % orig: 1e-4
-fsolvetol = 1e-6; % orig: 1e-6
+reltol = 1e-10; % orig: 1e-4
+abstol = 1e-10; % orig: 1e-4
+fsolvetol = 1e-10; % orig: 1e-6
 % init_rescale = 2e-3;
 % init_path = {'Field CA1_L'};
 % study = 'DS9';
