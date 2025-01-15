@@ -4,6 +4,7 @@ if nargin < 1
     matdir = [cd filesep 'MatFiles'];
 end
 
+alpha_ = 0; % Recruitment term, untested as of 1/15/25!
 beta_ = 1e-04;
 gamma1_ = 2e-03;
 gamma2_ = 0;
@@ -43,6 +44,7 @@ ip = inputParser;
 % validChar = @(x) ischar(x);
 validScalar = @(x) isnumeric(x) && isscalar(x) && (x>=0);
 validLogical = @(x) validScalar(x) && (x == 0 || x == 1);
+addParameter(ip, 'alpha', alpha_, validScalar);
 addParameter(ip, 'beta', beta_, validScalar);
 addParameter(ip, 'gamma1', gamma1_, validScalar);
 addParameter(ip, 'gamma2', gamma2_, validScalar);
@@ -252,6 +254,14 @@ for h = 1:(nt-1)
         % fprintf('min(nonzero N)/min(all N) = %.2d\n',abs(min(N(:,h+1)))/minposN)
         N(N < 0) = eps; % negative values are due to numerical instabilities - for now set them to eps if they occur
     end
+
+    % RECRUITMENT TERM; alpha = 0 KEEPS SYSTEM MASS-CONSERVING
+    
+    seedregions_ = (N(:,1) > 0);
+    N(seedregions_,h+1) = N(seedregions_,h+1) + ip.Results.alpha*(t(h+1)-t(h))*N(seedregions_,h); % exponential growth in seed region
+    % N(seedregions_,h+1) = N(seedregions_,h+1) + ip.Results.alpha*(t(h+1)-t(h)); % linear growth in seed region
+    % N(:,h+1) = N(:,h+1) + ip.Results.alpha*(t(h+1)-t(h))*N(:,h); % exponential growth everywhere (like NexIS)
+
     % ((diag((Conn.'*F_in)) - diag((Conn*F_out)))*k + beta*m(:,h)*k-gamma1*(n(:,h).*n(:,h))*k-gamma2*(n(:,h).*m(:,h))*k);
     N_adj_h1 = N(:,h+1).*Adj;
 %     Gamma_h = ip.Results.beta * m(:,h) * ip.Results.dt - ...
@@ -315,6 +325,7 @@ model_outputs.Parameters.epsilon = ip.Results.epsilon;
 model_outputs.Parameters.lambda1 = ip.Results.lambda1;
 model_outputs.Parameters.lambda2 = ip.Results.lambda2;
 model_outputs.Parameters.frac = ip.Results.frac;
+model_outputs.Parameters.alpha = ip.Results.alpha;
 model_outputs.Sim.L1 = ip.Results.L1;
 model_outputs.Sim.L2 = ip.Results.L2;
 model_outputs.Sim.L_int = ip.Results.L_int;
@@ -337,7 +348,7 @@ model_outputs.Sim.C = Conn;
 model_outputs.Sim.conn_thresh = ip.Results.conn_thresh;
 model_outputs.Sim.study = ip.Results.study;
 model_outputs.Sim.init_rescale = ip.Results.init_rescale;
-model_outputs.Sim.init_path = init_tau;
+model_outputs.Sim.init_path = ip.Results.init_path;
 model_outputs.Sim.resmesh = ip.Results.resmesh;
 model_outputs.Sim.rel_tol = ip.Results.reltol;
 model_outputs.Sim.abs_tol = ip.Results.abstol;

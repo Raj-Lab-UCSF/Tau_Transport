@@ -14,7 +14,7 @@ loadpath = [curpath filesep 'MatFiles'];
 if ~isfolder(simpath)
     mkdir(simpath)
 end
-simstr = 'hippocampus_testmat_for_single_edge_debug_tolfun_2'; % for saving the outputs
+simstr = 'hippocampus_testmat_for_single_edge_debug_alpha_100'; % for saving the outputs
 use_sr = 0;
 
 %% 2. Parameter definitions
@@ -35,13 +35,13 @@ paramnames = {'beta','gamma1','gamma2','frac','lambda1','lambda2',...
 
 inputparams(1,:) = paramnames;
 inputparams{2,1} = 1e-6; % beta
-inputparams{2,2} = linspace(1e-4,1e-2,10); % gamma1
+inputparams{2,2} = linspace(1e-4,1e-2,4); % gamma1
 inputparams{2,3} = 0; % gamma2
 inputparams{2,4} = 0.92; % frac
-inputparams{2,5} = [0.05,0.1]; % lambda1
-inputparams{2,6} = [0.05,0.1]; % lambda2
-inputparams{2,7} = [1,10,100]; % delta
-inputparams{2,8} = [1,10,100]; % epsilon
+inputparams{2,5} = 0.05; % lambda1
+inputparams{2,6} = 0.05; % lambda2
+inputparams{2,7} = [1,100]; % delta
+inputparams{2,8} = [1,100]; % epsilon
 
 % 2b. Create parameter array to grid search using allcomb()
 paramgrid = allcomb(inputparams{2,1},...
@@ -55,6 +55,8 @@ paramgrid = allcomb(inputparams{2,1},...
 paramnamescell = repmat(paramnames,size(paramgrid,1),1);
 
 % 2c. Define other parameters
+alpha = 100;
+frac = 0.92;
 L_int = 1000; % default = 1000; in microns
 L1 = 200; % default = 200
 L2 = 200; % default = 200
@@ -62,8 +64,8 @@ L_ais = 40; % default = 40
 L_syn = 40; % default = 40
 T = []; % default = 0.05
 dt = []; % default = 0.005
-% trange = 0:0.01:0.03; % tolerance debug
-trange = [0:0.0025:0.1, 0.105:0.005:0.3, 0.31:0.01:1]; % Original
+trange = 0:0.01:0.05; % tolerance debug
+% trange = [0:0.0025:0.1, 0.105:0.005:0.3, 0.31:0.01:1]; % Original
 resmesh = 'coarse'; % 'fine' or 'coarse' - use 'coarse' for faster, less precise simulations
 plotting = 0;
 reltol = 1e-10; % orig: 1e-4
@@ -137,6 +139,8 @@ if ncores > 0
                                     paramnames_i{6},paramlist(6),...
                                     paramnames_i{7},paramlist(7),...
                                     paramnames_i{8},paramlist(8),...
+                                    'frac',frac,...
+                                    'alpha',alpha,...
                                     'L_int',L_int,...
                                     'L1',L1,...
                                     'L2',L2,...
@@ -176,6 +180,8 @@ else
                                     paramnames_i{6},paramlist(6),...
                                     paramnames_i{7},paramlist(7),...
                                     paramnames_i{8},paramlist(8),...
+                                    'frac',frac,...
+                                    'alpha',alpha,...
                                     'L_int',L_int,...
                                     'L1',L1,...
                                     'L2',L2,...
