@@ -5,20 +5,20 @@ if nargin < 1
 end
 
 alpha_ = 0; % Recruitment term, untested as of 1/15/25!
-beta_ = 1e-04;
-gamma1_ = 2e-03;
+beta_ = 1e-6;
+gamma1_ = 0.004;
 gamma2_ = 0;
-delta_ = 1;
-epsilon_ = 0.01;
-lambda1_ = 0.01;
-lambda2_ = 0.01;
+delta_ = 100;
+epsilon_ = 10;
+lambda1_ = 0.025;
+lambda2_ = 0.025;
 study_ = 'Hurtado';
 init_path_ = [];
 init_rescale_ = 1e-2;
 dt_ = 0.01;
 T_ = 0.1;
 trange_ = [];
-frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
+frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007) 0.92 - NOW USING 0.7!
 L_int_ = 1000; % in micrometers
 L1_ = 200;
 L2_ = 200; 
@@ -39,6 +39,8 @@ sr_fun_flux_ = [];
 sr_fun_em_ = [];
 use_sr_w1_ = 0;
 sr_fun_w1_ = [];
+
+empty_net = [];
 
 ip = inputParser;
 % validChar = @(x) ischar(x);
@@ -80,6 +82,13 @@ addParameter(ip, 'trange', trange_);
 addParameter(ip, 'init_path', init_path_);
 addParameter(ip, 'plotting', plotting_, validLogical);
 addParameter(ip, 'sim_no', sim_no_, validScalar);
+
+addParameter(ip, 'net_f', empty_net)
+addParameter(ip, 'net_w', empty_net)
+addParameter(ip, 'use_nn', 0)
+%addParameter(ip, 'z_mu')
+%addParameter(ip, 'z_sigma')
+
 parse(ip, varargin{:});
 
 load([matdir filesep 'Mouse_Tauopathy_Data_HigherQ.mat'],'mousedata_struct'); 
@@ -203,7 +212,9 @@ tic
                                 'len_scale',ip.Results.len_scale,...
                                 'use_sr_flux',ip.Results.use_sr_flux,...
                                 'sr_fun_flux',ip.Results.sr_fun_flux,...
-                                'sr_fun_em',ip.Results.sr_fun_em); 
+                                'sr_fun_em',ip.Results.sr_fun_em,...
+                                'net',ip.Results.net_f,...
+                                'use_nn',ip.Results.use_nn); 
 toc
 for h = 1:(nt-1)
     fprintf('Time step %d/%d, Simulation %d\n',h,nt-1,ip.Results.sim_no)
@@ -233,7 +244,9 @@ for h = 1:(nt-1)
                                     'connectome_subset',ip.Results.connectome_subset,...
                                     'conn_thresh',ip.Results.conn_thresh,...
                                     'use_sr_w1',ip.Results.use_sr_w1,...
-                                    'sr_fun_w1',ip.Results.sr_fun_w1); 
+                                    'sr_fun_w1',ip.Results.sr_fun_w1,...
+                                    'net',ip.Results.net_w,...
+                                    'use_nn',ip.Results.use_nn); 
     toc
     V_ss_1_h = S_ss(:,:,h);
     V_ss_2_h = R_ss(:,:,h);
@@ -241,8 +254,12 @@ for h = 1:(nt-1)
     v_2 = diag(Conn.'*V_ss_2_h); % the contributions of the mass change's values in V_ss_2 on eanch node are by columns
     F_in = 6*30*24*(60)^2 * netw_flux(:,:,h); % convert from seconds to 180 days
     F_out = F_in.';
-    m_t= gamma1_new.*N(:,h).*(2*beta_new-gamma2_new.*...
-        N(:,h)./(beta_new-gamma2_new.*N(:,h)).^2); % 2.5e-5
+    %m_t= gamma1_new.*N(:,h).*(2*beta_new-gamma2_new.*...
+    %    N(:,h)./(beta_new-gamma2_new.*N(:,h)).^2); % 2.5e-5
+
+    m_t= gamma1_new.*N(:,h).*((2*beta_new-gamma2_new.*...
+        N(:,h))./(beta_new-gamma2_new.*N(:,h)).^2);
+
 %     N(:,h+1) = N(:,h)+(1./(Vol.*(1+m_t)+v_1+v_2)).*((diag((Conn.'*F_in)) - ...
 %         diag((Conn*F_out)))*ip.Results.dt); 
     N(:,h+1) = N(:,h)+(1./(Vol.*(1+m_t)+v_1+v_2)).*((diag((Conn.'*F_in)) - ...
@@ -294,7 +311,9 @@ for h = 1:(nt-1)
                                     'len_scale',ip.Results.len_scale,...
                                     'use_sr_flux',ip.Results.use_sr_flux,...
                                     'sr_fun_flux',ip.Results.sr_fun_flux,...
-                                    'sr_fun_em',ip.Results.sr_fun_em); 
+                                    'sr_fun_em',ip.Results.sr_fun_em,...
+                                    'net',ip.Results.net_f,...
+                                    'use_nn',ip.Results.use_nn); 
     toc
 end
 M = (gamma1_new * N.^2)./(beta_new - gamma2_new * N);

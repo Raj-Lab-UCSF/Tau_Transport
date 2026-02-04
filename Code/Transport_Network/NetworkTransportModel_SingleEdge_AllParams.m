@@ -3,9 +3,10 @@
 % truth - DO NOT USE SR HERE
 clc; clear; close all;
 %% 1. Define directories for saving outputs
-curpath = '~/Documents/MATLAB/Tau_Transport';
+%curpath = '~/Documents/MATLAB/Tau_Transport';
 % curpath = 'C:\Users\brand\Desktop\Raj-Sindi\Tau_Transport-jtorok_dev'; % CHANGE THIS LINE TO WHERE Tau_Transport DIRECTORY IS
 % curpath = 'C:/Users/brand/Desktop/Raj-Sindi/Tau_Transport-jtorok_dev';
+curpath = '/Users/nbarron/Desktop/Tau_Transport';
 p = genpath(curpath);
 addpath(p);
 simpath = [curpath filesep 'SampleFiles']; % THIS IS WHERE THE OUTPUTS WILL BE SAVED
@@ -15,7 +16,8 @@ if ~isfolder(simpath)
 end
 
 %% 1.1 Top line settings
-outputName = 'test_for_flux_and_w1'; % CHANGE THIS AS NEEDED, THIS IS THE NAME OF THE OUTPUT FILE
+%outputName = 'data_frac_07_widerange_biased_gamma_k2'; % CHANGE THIS AS NEEDED, THIS IS THE NAME OF THE OUTPUT FILE
+outputName = 'data_nobias_e5_train';
 save2csv = 1;
 simstr = outputName; 
 use_sr_flux = 0; % KEEP AS 0
@@ -24,19 +26,23 @@ use_sr_em = 0;
 
 %% 2. Random parameter value generation
 % 2a. Initialize
-rng(0); % Mind that this sets the random seed statically
+rng(42); % Mind that this sets the random seed statically
 inputparams = cell(2,6);
 paramnames = {'gamma1','lambda1','delta','epsilon','tau_x0','tau_xL'};
 inputparams(1,:) = paramnames;
-numiterations = 2e+1;
+numiterations = 100000;
 
 % 2b. Define input ranges
 gamma1_range = [5e-5, 5e-2];
 lambda_range = [0.01, 0.1];
 delta_range = [10, 100];
 epsilon_range = [10, 100];
-tau_x0_range = [0, 1.6e-4];
-tau_xL_range = [0, 1.6e-4];
+%tau_x0_range = [0, 1.6e-4];
+%tau_xL_range = [0, 1.6e-4];
+%tau_x0_range = [0, 2e-4];
+%tau_xL_range = [0, 2e-4];
+tau_x0_range = [0, 0.005];
+tau_xL_range = [0, 0.005];
 
 % 2c. Generate random samples from either log- or lin-spaced distributions
 logdist_fun = @(x,n) 10.^(log10(x(1)) + (log10(x(2)/x(1)) * rand(n,1)));
@@ -46,8 +52,14 @@ gamma1_vals = logdist_fun(gamma1_range,numiterations);
 lambda_vals = logdist_fun(lambda_range,numiterations);
 delta_vals = lindist_fun(delta_range,numiterations);
 epsilon_vals = lindist_fun(epsilon_range,numiterations);
+%tau_x0_vals = gamrnd(2,0.0005,numiterations,1);
+%tau_xL_vals = gamrnd(2,0.0005,numiterations,1);
+
 tau_x0_vals = lindist_fun(tau_x0_range,numiterations);
 tau_xL_vals = lindist_fun(tau_xL_range,numiterations);
+
+%tau_x0_vals = 0.005*exp(-5)*exp(tau_x0_vals);
+%tau_xL_vals = 0.005*exp(-5)*exp(tau_xL_vals);
 
 % 2d. Define parameter grid
 inputparams{2,1} = gamma1_vals;
@@ -68,7 +80,7 @@ paramnamescell = repmat(paramnames,size(paramgrid,1),1);
 % 2e. Define other parameters
 % DO NOT CHANGE THESE EXCEPT WHERE INDICATED!!!
 beta = 1e-6;
-frac = 0.92;
+frac = 0.7; %0.92;
 L_int = 1000; % default = 1000; in microns
 L1 = 200; % default = 200
 L2 = 200; % default = 200

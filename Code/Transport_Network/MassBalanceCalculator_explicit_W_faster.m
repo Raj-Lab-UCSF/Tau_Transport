@@ -12,7 +12,7 @@ delta_ = 1;
 epsilon_ = 0.01;
 lambda1_ = 0.01;%0.02  0.01 
 lambda2_ = 0.01; %0.04  0.01;
-frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
+frac_ = 0.7; % Average fraction of n diffusing (Konsack 2007) 0.92 - NOW USING 0.7!
 L_int_ = 1000; % in micrometers
 L1_ = 200;
 L2_ = 200; 
@@ -54,6 +54,11 @@ addParameter(ip, 'len_scale', len_scale_, validScalar);
 addParameter(ip, 'time_scale', time_scale_, validScalar);
 addParameter(ip, 'use_sr_w1', use_sr_w1_);
 addParameter(ip, 'sr_fun_w1', sr_fun_w1_);
+addParameter(ip, 'net', [])
+addParameter(ip, 'use_nn', 0)
+%addParameter(ip, 'z_mu')
+%addParameter(ip, 'z_sigma')
+
 parse(ip, varargin{:});
 beta_new = ip.Results.beta * ip.Results.time_scale;
 gamma1_new = ip.Results.gamma1 * ip.Results.time_scale;
@@ -63,6 +68,11 @@ L2_new = ip.Results.L2 * ip.Results.len_scale;
 L_int_new = ip.Results.L_int * ip.Results.len_scale;
 L_ais_new = ip.Results.L_ais * ip.Results.len_scale;
 L_syn_new = ip.Results.L_syn * ip.Results.len_scale;
+
+use_nn = ip.Results.use_nn;
+net = ip.Results.net;
+%z_mu = ip.Results.z_mu;
+%z_sigma = ip.Results.z_sigma;
 
 % % % 2. Definition of static constants
 
@@ -234,6 +244,49 @@ if ~isempty(ip.Results.sr_fun_w1) && logical(ip.Results.use_sr_w1)
                                           network_flux);
     zeroAdjinds = find(Adj(:) == 0);
     W_1_flux(zeroAdjinds) = 0; %#ok<FNDSB>
+elseif logical(use_nn)
+    
+    [edge_rows, edge_cols] = find(Adj);
+
+    edge_count = length(edge_rows);
+
+    N1_list = zeros(edge_count,1);
+    N2_list = zeros(edge_count,1);
+
+    for j = 1:edge_count
+        row_j = edge_rows(j);
+        col_j = edge_cols(j);
+        N1_list(j,1) = tau_x0(row_j,col_j);
+        %N1_list(j,1) = tau_xL(row_j);
+        N2_list(j,1) = tau_xL(col_j);
+    end
+
+    gamma_row = repmat(gamma1_new, edge_count, 1);
+    lambda_row = repmat(ip.Results.lambda1, edge_count, 1);
+    delta_row = repmat(ip.Results.delta, edge_count, 1);
+    epsilon_row = repmat(ip.Results.epsilon, edge_count, 1);
+
+    input_feats = [gamma_row, lambda_row, delta_row, epsilon_row, N1_list, N2_list];
+    input_feats_scaled = scale_inputs(input_feats);
+
+    input_feats_scaled_dl = dlarray(input_feats_scaled, 'UUU');
+
+    nn_preds_scaled_dl = predict(net, input_feats_scaled_dl);
+
+    nn_preds_scaled = extractdata(nn_preds_scaled_dl);
+
+    nn_preds = unscale_outputs_w(nn_preds_scaled);
+
+    W_1_flux = zeros(nroi);
+
+    for j = 1:edge_count
+        row_j = edge_rows(j);
+        col_j = edge_cols(j);
+        %if tau_xL(col_j) > 0 || tau_x0(row_j,col_j) > 0
+        W_1_flux(row_j, col_j) = nn_preds(j);
+        %end
+    end
+    
 else
     fprintf('Using NTM Integration\n')
     W_1_flux = zeros(nroi);
@@ -255,9 +308,9 @@ else
         C_1 = tau_xL(j);
         C_1 = repmat(C_1,1,length(Ad_in));
         C_1 = C_1.';
-        i_app_0 = logical((tau_x0(:,j)+C_1==0).*(Ad_in));
+        i_app_0 = logical((tau_x0(:,j)+C_1==0).*(Ad_in)); % entires where tau in zero and an edge exists?
         i_len = ones(nroi,1);
-        i_app_00 = i_len(i_app_0,1);
+        i_app_00 = i_len(i_app_0,1);     % BUG HERE? i_app_00 will just be a variable length array of 1s?
         W_1_flux(i_app_0,j)=W_1_0*i_app_00 ;  
         %W_2_flux(i_app_0,j)=W_0_1*i_app_00;
     %     W_1_flux(i_app_0,j) = W_1_0(1)*i_app_00 ;  % ones(length(i_app_00),1);

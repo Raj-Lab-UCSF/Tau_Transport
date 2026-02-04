@@ -10,9 +10,9 @@ gamma1_ = 2e-05;
 gamma2_ = 0;
 delta_ = 1;
 epsilon_ = 0.01;
-lambda1_ = 0.01;%0.02  0.01 
+lambda1_ = 0.01; %0.02  0.01 
 lambda2_ = 0.01; %0.04  0.01;
-frac_ = 0.92; % Average fraction of n diffusing (Konsack 2007)
+frac_ = 0.7; % Average fraction of n diffusing (Konsack 2007) 0.92 - NOW USING 0.7!
 L_int_ = 1000; % in micrometers
 L1_ = 200;
 L2_ = 200; 
@@ -56,6 +56,10 @@ addParameter(ip, 'conn_thresh', conn_thresh_, validScalar);
 addParameter(ip, 'use_sr_flux', use_sr_flux_);
 addParameter(ip, 'sr_fun_flux', sr_fun_flux_);
 addParameter(ip, 'sr_fun_em', sr_fun_em_);
+addParameter(ip, 'net', [])
+addParameter(ip, 'use_nn', 0)
+%addParameter(ip, 'z_mu')
+%addParameter(ip, 'z_sigma')
 
 parse(ip, varargin{:});
 beta_new = ip.Results.beta*ip.Results.time_scale;
@@ -67,12 +71,11 @@ L_int_new = ip.Results.L_int * ip.Results.len_scale;
 L_ais_new = ip.Results.L_ais * ip.Results.len_scale;
 L_syn_new = ip.Results.L_syn * ip.Results.len_scale;
 
-% % % 2a. Use symbolic expression from DSO
-if ~isempty(ip.Results.sr_fun_flux) && ~isempty(ip.Results.sr_fun_em) && logical(ip.Results.use_sr_flux)
-% theta = {gamma1, lambda, delta, epsilon, N1, N2}
-fprintf('Using DSO Expression\n')
+use_nn = ip.Results.use_nn;
+net = ip.Results.net;
+%z_mu = ip.Results.z_mu;
+%z_sigma = ip.Results.z_sigma;
 
-% Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
 load([matdir filesep 'Connectomes.mat'],'Connectomes'); % more updated version of connectome, should be minor
 Conn = Connectomes.default;
 Conn = Conn - diag(diag(Conn)); % remove the diagonal
@@ -99,6 +102,66 @@ switch ip.Results.connectome_subset
 end
 
 nroi = size(Adj,1);
+
+if use_nn
+    
+    [edge_rows, edge_cols] = find(Adj);
+
+    edge_count = length(edge_rows);
+
+    N1_list = zeros(edge_count,1);
+    N2_list = zeros(edge_count,1);
+
+    for j = 1:edge_count
+        row_j = edge_rows(j);
+        col_j = edge_cols(j);
+        N1_list(j,1) = tau_x0(row_j,col_j);
+        %N1_list(j,1) = tau_xL(row_j);
+        N2_list(j,1) = tau_xL(col_j);
+    end
+
+    gamma_row = repmat(gamma1_new, edge_count, 1);
+    lambda_row = repmat(ip.Results.lambda1, edge_count, 1);
+    delta_row = repmat(ip.Results.delta, edge_count, 1);
+    epsilon_row = repmat(ip.Results.epsilon, edge_count, 1);
+
+    input_feats = [gamma_row, lambda_row, delta_row, epsilon_row, N1_list, N2_list];
+
+    %input_feats
+
+    input_feats_scaled = scale_inputs(input_feats);
+
+    %input_feats_scaled
+
+    input_feats_scaled_dl = dlarray(input_feats_scaled, 'UUU');
+
+    nn_preds_scaled_dl = predict(net, input_feats_scaled_dl);
+
+    nn_preds_scaled = extractdata(nn_preds_scaled_dl);
+
+    nn_preds = unscale_outputs_f(nn_preds_scaled);
+
+    %nn_preds
+
+    network_flux = zeros(nroi);
+
+    for j = 1:edge_count
+        row_j = edge_rows(j);
+        col_j = edge_cols(j);
+        if tau_xL(col_j) > 0 || tau_x0(row_j,col_j) > 0
+            network_flux(row_j, col_j) = nn_preds(j);
+        end
+    end
+
+    mass_edge = zeros(nroi, nroi); % UNUSED BUT THROWS AN ERROR IF NOT SET
+
+elseif ~isempty(ip.Results.sr_fun_flux) && ~isempty(ip.Results.sr_fun_em) && logical(ip.Results.use_sr_flux)
+% % % 2a. Use symbolic expression from DSO
+    
+% theta = {gamma1, lambda, delta, epsilon, N1, N2}
+fprintf('Using DSO Expression\n')
+
+% Adj = readmatrix([matdir filesep 'mouse_adj_matrix_19_01.csv']);
 % N1_mat = repmat(tau_xL,1,nroi);
 % N2_mat = repmat(tau_xL.',nroi,1);
 N1_mat = repmat(tau_xL,1,nroi);
