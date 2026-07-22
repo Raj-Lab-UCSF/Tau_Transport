@@ -124,6 +124,13 @@ X_val_pt = torch.tensor(X_val_scaled, dtype=torch.float32).to(device)
 
 # Train Model
 
+pat_max = 20
+pat_counter = 0
+diff_loss = float('inf')
+eps_val = 10**-7
+
+loss_prev = float('inf')
+
 for fold, (train_index, test_index) in enumerate(kf.split(X_train_scaled, y_train_scaled)):
 
     # Skip incorrect folds - Only run one fold per job
@@ -173,6 +180,8 @@ for fold, (train_index, test_index) in enumerate(kf.split(X_train_scaled, y_trai
         # Print progress
         print(f'Epoch [{epoch_i+1}/{epochs_n}], Loss: {loss.item():.4f}')
 
+        nmse_i = 0
+
         if (epoch_i + 1) % epoch_chunk_size == 0:
 
             # predict fold test data and get error metrics
@@ -206,4 +215,18 @@ for fold, (train_index, test_index) in enumerate(kf.split(X_train_scaled, y_trai
 
                 model_filename = model_save_file + ".pt"
 
-                traced_model.save(model_filename)          
+                traced_model.save(model_filename)   
+            
+            nmse_i = metrics_val[-1]
+
+        diff_loss = loss_prev - nmse_i
+        loss_prev = nmse_i
+
+        if diff_loss > eps_val:
+            pat_counter = 0
+        else:
+            pat_counter = pat_counter + 1
+
+        if pat_counter > pat_max:
+            break
+        
